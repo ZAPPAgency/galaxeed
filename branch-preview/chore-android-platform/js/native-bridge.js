@@ -4,10 +4,11 @@
 // file stays plain <script> (global functions, zero build step) so the web
 // build keeps working unmodified in any browser. Without Capacitor, nothing below runs.
 //
-// It replaces the web stubs (services.js: AdService/IAPService, audio.js:
-// HapticService, state.js: saveState/loadState) with real native-backed
-// versions, WITHOUT any other game file needing to change — that separation
-// is the entire point of the AdService/IAPService abstraction from Étape 4.
+// It starts the game from the native save (bootGame in main.js) and replaces the
+// web stubs (AdService/IAPService in services.js, HapticService in audio.js,
+// saveState in state.js) with native-backed versions.
+// The stubs are top-level `const` objects, which are not window properties:
+// patch them by name (HapticService.impact = …), never through window.
 //
 // Community plugin APIs (AdMob, RevenueCat) change across major versions:
 // check their README when upgrading.
@@ -24,10 +25,34 @@ if (!Capacitor || !Capacitor.isNativePlatform || !Capacitor.isNativePlatform()) 
   // Plain browser. The bare imports above only resolve in the Vite build, so the web
   // build logs one expected, harmless console error here.
 } else {
+  window.nativeBoot = true; // main.js leaves the boot to bootGameFromNativeSave()
   bootNative();
 }
 
+// Preferences is the source of truth on native: the OS can purge WebView storage.
+// The WebView's localStorage is read only while Preferences is still empty, to
+// keep games saved before the native save existed.
+async function bootGameFromNativeSave() {
+  let raw;
+  try {
+    raw = (await Preferences.get({ key: SAVE_KEY })).value;
+  } catch (e) {
+    // Keep the web saveState this session: a native save we could not read
+    // must not be overwritten.
+    console.warn("Lecture Preferences impossible", e);
+    bootGame(loadState());
+    return;
+  }
+  window.saveState = function nativeSaveState(state) {
+    state.lastSaveTime = Date.now();
+    Preferences.set({ key: SAVE_KEY, value: JSON.stringify(state) }).catch((e) => console.warn("Sauvegarde impossible", e));
+  };
+  bootGame(raw ? parseSave(raw) : loadState());
+}
+
 async function bootNative() {
+  await bootGameFromNativeSave();
+
   // ---- Status bar / splash ----
   try {
     await StatusBar.setStyle({ style: Style.Dark });
@@ -36,30 +61,12 @@ async function bootNative() {
 
   // ---- Haptics: replace the no-op web stub ----
   const impactMap = { light: ImpactStyle.Light, medium: ImpactStyle.Medium, heavy: ImpactStyle.Heavy };
-  window.HapticService.impact = async (type) => {
+  HapticService.impact = async (type) => {
     try {
       if (type === "success") await Haptics.notification({ type: NotificationType.Success });
       else await Haptics.impact({ style: impactMap[type] || ImpactStyle.Medium });
     } catch (e) { /* device may not support haptics */ }
   };
-
-  // ---- Preferences-backed save/load (replaces localStorage) ----
-  window.saveState = function nativeSaveState(state) {
-    state.lastSaveTime = Date.now();
-    Preferences.set({ key: SAVE_KEY, value: JSON.stringify(state) }).catch((e) => console.warn("Sauvegarde impossible", e));
-  };
-  // loadState() already ran synchronously off localStorage before this module
-  // finished loading; on native we migrate that into Preferences once, then
-  // Preferences becomes the source of truth for every future save/load.
-  try {
-    const { value } = await Preferences.get({ key: SAVE_KEY });
-    if (value && JSON.stringify(Game.state) !== value) {
-      // A previous native save exists and differs from the localStorage bootstrap
-      // (e.g. first run after this bridge was added) - prefer it.
-      const migrated = JSON.parse(value);
-      if (migrated && migrated.version === SAVE_VERSION) Object.assign(Game.state, migrateRetiredFields(migrated));
-    }
-  } catch (e) { console.warn("Lecture Preferences impossible", e); }
 
   // ---- AdMob ----
   // Replace ad-unit IDs below with your real AdMob unit IDs before release;
@@ -72,7 +79,7 @@ async function bootNative() {
     await AdMob.initialize({ requestTrackingAuthorization: false, initializeForTesting: true });
   } catch (e) { console.warn("AdMob init failed", e); }
 
-  window.AdService.showRewarded = async function (_placementId) {
+  AdService.showRewarded = async function (_placementId) {
     try {
       await AdMob.prepareRewardVideoAd({ adId: AD_UNITS.rewarded });
       const result = await AdMob.showRewardVideoAd();
@@ -82,7 +89,7 @@ async function bootNative() {
       return false;
     }
   };
-  window.AdService.showInterstitial = async function () {
+  AdService.showInterstitial = async function () {
     try {
       await AdMob.prepareInterstitial({ adId: AD_UNITS.interstitial });
       await AdMob.showInterstitial();
@@ -96,7 +103,7 @@ async function bootNative() {
     await Purchases.configure({ apiKey: "YOUR_REVENUECAT_PUBLIC_SDK_KEY" });
   } catch (e) { console.warn("RevenueCat init failed", e); }
 
-  window.IAPService.purchase = async function (productId) {
+  IAPService.purchase = async function (productId) {
     try {
       const offerings = await Purchases.getOfferings();
       const pkg = offerings.current?.availablePackages.find(p => p.product.identifier === productId)
@@ -109,10 +116,10 @@ async function bootNative() {
       return { success: false, productId };
     }
   };
-  window.IAPService.restorePurchases = async function () {
+  IAPService.restorePurchases = async function () {
     try { await Purchases.restorePurchases(); } catch (e) { console.warn("Restore failed", e); }
   };
-  window.IAPService.isSubscribed = function (_productId) {
+  IAPService.isSubscribed = function (_productId) {
     return Game.state ? isVipActive(Game.state) : false;
   };
 
