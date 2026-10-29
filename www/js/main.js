@@ -11,13 +11,13 @@ function requestStorageAccessBestEffort() {
   }).catch(() => {});
 }
 
-(async function () {
+// Builds the game from a loaded state and starts the main loop. Runs once:
+// from the DOMContentLoaded handler below on web, from native-bridge.js on native.
+function bootGame(state) {
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().catch(() => {}); // best-effort: ask the browser not to evict our save under storage pressure
   }
   requestStorageAccessBestEffort();
-
-  const state = loadState();
 
   Object.assign(window.Game, {
     state,
@@ -162,4 +162,10 @@ function requestStorageAccessBestEffort() {
   });
   window.addEventListener("focus", handleAppResume);
   window.addEventListener("pageshow", handleAppResume);
-})();
+}
+
+// native-bridge.js is a module, so it runs before DOMContentLoaded. On native it
+// sets window.nativeBoot and calls bootGame() itself once the native save is read.
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.nativeBoot) bootGame(loadState());
+});
