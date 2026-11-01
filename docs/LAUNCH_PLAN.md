@@ -1,6 +1,7 @@
 # Spacemerge — Plan de lancement iOS + Android
 
 **Rédigé le :** 2026-09-27, à partir de `main` @ `5043983` et de tous les fichiers de `docs/`.
+**Avancement mis à jour le :** 2026-11-01 (cases du §4 et du §7).
 **Pour :** Moi (dev, code, build) et le Collègue (UI/UX, assets, marketing).
 
 **Légende**
@@ -252,14 +253,14 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
 
 **Critère de sortie :** les 4 consoles (App Store Connect, Play Console, AdMob, RevenueCat) sont accessibles, le Paid Apps Agreement est actif, et le §3 porte les valeurs décidées.
 
-- [ ] **CPT-01 · Accepter la licence Xcode et vérifier la chaîne d'outils**
+- [x] **CPT-01 · Accepter la licence Xcode et vérifier la chaîne d'outils**
   - Moi · Les deux · **0,5 h** · Dépend de : —
   - Pourquoi : `git` et `pod` échouent tant que la licence n'est pas acceptée (N-14). Capacitor 8 exige Node ≥ 22 et JDK 21 ⚠️.
   - Fichiers : `~/.zshrc`
   - Étapes :
     1. ~~`sudo xcodebuild -license accept`, puis `xcodebuild -runFirstLaunch`.~~ Fait le 2026-09-30 : `git` 2.54 et `pod` 1.16.2 répondent.
     2. ~~Xcode → Settings → Components : installer un runtime iOS Simulator.~~ Fait : runtimes iOS 18.5 et 26.4 présents.
-    3. **Reste à faire :** dans `~/.zshrc`, ajouter `export JAVA_HOME=$(/usr/libexec/java_home -v 21)` (le 2026-09-30, `java -version` affiche encore 24). Dans Android Studio : Settings → Build Tools → Gradle → Gradle JDK = 21.
+    3. ~~Dans `~/.zshrc`, ajouter `export JAVA_HOME=$(/usr/libexec/java_home -v 21)`. Dans Android Studio : Settings → Build Tools → Gradle → Gradle JDK = 21.~~ Fait : `java -version` affiche 21.0.11 (vérifié le 2026-11-01).
     4. `git --version && pod --version && node -v && java -version`.
   - Fait quand : `git status` et `pod --version` répondent, `java -version` affiche 21, et un simulateur iPhone démarre.
 
@@ -272,7 +273,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     2. ~~Vérifier que `https://play.google.com/store/apps/details?id=com.zappstudio.spacemerge` renvoie bien 404.~~ Fait le 2026-09-30.
     3. Trancher trader ou non-trader, et l'adresse publique (D9).
     4. ~~Remplacer « Hypothèse » par « Décidé le … » dans le §3.~~ Fait pour H-2 à H-4 et H-6 ; ajouter le statut DSA une fois tranché.
-    5. Mettre l'`appId` final à `capacitor.config.ts:6` et supprimer le commentaire des lignes 3-4, devenu faux.
+    5. ~~Mettre l'`appId` final à `capacitor.config.ts:6`~~ Fait (`e93ec95`). **Reste à faire :** supprimer le commentaire des lignes 3-4, devenu faux.
   - Fait quand : le §3 est à jour et `grep -n "com.example" capacitor.config.ts` ne renvoie rien.
 
 - [ ] **CPT-03 · S'inscrire à l'Apple Developer Program (individuel)** ⏳
@@ -282,6 +283,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     1. App « Apple Developer » → Account → Enroll → Individual. Identité vérifiée par pièce d'identité. 99 USD/an ⚠️ prix local.
     2. Utiliser un Apple ID avec 2FA, dédié au développement (les testeurs Sandbox demandent d'autres adresses e-mail).
   - Fait quand : developer.apple.com/account affiche le programme actif.
+  - **En cours (2026-11-01) :** inscription envoyée, validation Apple en attente. En attendant, Xcode signe avec l'équipe gratuite : le profil expire au bout de 7 jours (le premier le 2026-11-08).
 
 - [ ] **CPT-04 · Préparer la Play Console : compte, app, profil marchand** ⏳
   - Moi · Android · **1 h** · Dépend de : CPT-02
@@ -292,13 +294,14 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     3. Paramètres → Profil de paiement : créer le profil marchand (IBAN, fiscalité).
     4. ⚠️ Remplir la déclaration de statut « trader » (DSA) si Play Console la demande.
   - Fait quand : l'app est listée, et Monétisation → Produits est accessible sans bandeau « profil marchand ».
+  - **En cours (2026-11-01) :** compte créé, vérification en attente. Restent les étapes 2 à 4.
 
-- [ ] **CPT-05 · Créer le compte AdMob**
+- [x] **CPT-05 · Créer le compte AdMob**
   - Moi · Les deux · **0,5 h** · Dépend de : —
   - Étapes : admob.google.com avec le compte Google du projet ; renseigner pays, fuseau et devise. Ne pas encore créer d'app (ADS-01).
   - Fait quand : la console AdMob s'ouvre.
 
-- [ ] **CPT-06 · Créer le compte RevenueCat**
+- [x] **CPT-06 · Créer le compte RevenueCat**
   - Moi · Les deux · **0,5 h** · Dépend de : —
   - Étapes : app.revenuecat.com → projet « Spacemerge ». ⚠️ Vérifier le plafond de revenu du palier gratuit sur revenuecat.com/pricing.
   - Fait quand : le projet est visible.
@@ -327,7 +330,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
 - `python3 -m http.server -d dist-www 8080` sert un jeu complet.
 - `npm run build:release` refuse un build qui contient un ID de test.
 
-- [ ] **STR-01 · Réparer `npm run build` en retirant le plugin Game Center** ★
+- [x] **STR-01 · Réparer `npm run build` en retirant le plugin Game Center** ★
   - Moi · Les deux · **1 h** · Dépend de : CPT-01
   - Pourquoi : N-01, N-03, D6.
   - Fichiers : `www/js/native-bridge.js`, `package.json`, `package-lock.json`
@@ -338,7 +341,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     4. `npm run build`.
   - Fait quand : le build sort en code 0 et `grep -rn "GameConnect\|game-connect" www package.json` ne renvoie rien.
 
-- [ ] **STR-02 · Produire un `dist-www/` complet, sans fichiers web-only** ★
+- [x] **STR-02 · Produire un `dist-www/` complet, sans fichiers web-only** ★
   - Moi · Les deux · **3 h** · Dépend de : STR-01
   - Pourquoi : N-02 (sans ça l'app native est vide), S-1 (fichiers web-only dans le bundle). `debug.js` ne doit jamais partir dans un binaire store.
   - Fichiers : `vite.config.js`, `package.json`, nouveau `scripts/build-native.mjs`, `www/index.html`
@@ -353,6 +356,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     - `ls dist-www/assets/tiles | wc -l` donne 27.
     - Le jeu tourne via `python3 -m http.server -d dist-www 8080`.
     - `dist-www` ne contient ni `debug.js` ni `social-share.png`.
+  - Fait le 2026-10-11 (`4efdeac`, option B). Il y a maintenant 42 tuiles. **Reste à faire :** l'étape 5 (commentaire dans `index.html`).
 
 - [ ] **STR-03 · Séparer les IDs de test et les IDs réels, avec un garde-fou de release**
   - Moi · Les deux · **2,5 h** · Dépend de : STR-02
@@ -374,9 +378,9 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
   - Pourquoi : S-3. `Info.plist`, entitlements, manifest et Gradle sont des sources.
   - Fichiers : `.gitignore`, `CLAUDE.md` §5
   - Étapes :
-    1. Retirer `ios/` (l.3).
-    2. Ignorer : `ios/App/App/public/`, `ios/App/build/`, `ios/App/Pods/`, `ios/DerivedData/`, `xcuserdata/`, `*.xcuserstate`, `android/.gradle/`, `android/build/`, `android/app/build/`, `android/local.properties`, `android/app/src/main/assets/public/`, `android/.idea/`.
-    3. `CLAUDE.md` §5 : remplacer « `ios/` and `android/` are generated (gitignored) » par « `ios/` and `android/` are committed; `cap sync` only regenerates `public/` and the plugin list. »
+    1. ~~Retirer `ios/` (l.3).~~ Fait le 2026-11-01, pas encore committé.
+    2. ~~Ignorer : `ios/App/App/public/`, `ios/App/build/`, `ios/App/Pods/`, `ios/DerivedData/`, `xcuserdata/`, `*.xcuserstate`, `android/.gradle/`, `android/build/`, `android/app/build/`, `android/local.properties`, `android/app/src/main/assets/public/`, `android/.idea/`.~~ Fait : les `.gitignore` générés par `cap add` dans `ios/` et `android/` couvrent déjà ces chemins.
+    3. **Reste à faire :** `CLAUDE.md` §5 : remplacer « `ios/` and `android/` are generated (gitignored) » par « `ios/` and `android/` are committed; `cap sync` only regenerates `public/` and the plugin list. »
   - Fait quand : après AND-01 et IOS-01, `git status` ne montre ni `build/`, ni `public/`, ni `Pods/`.
 
 - [ ] **STR-05 · Écrire les tests unitaires de l'économie (sans dépendance)**
@@ -429,6 +433,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     4. Filet de sécurité : sans boot natif au bout de `NATIVE_BOOT_TIMEOUT_MS` (3000, dans `config.js`), démarrer depuis `localStorage`.
     5. Réécrire les commentaires des lignes touchées (`CLAUDE.md` §4).
   - Fait quand : sur le web, rien ne change. En natif (revérifié en AND-02) : relance sans tutoriel, et un seul modal hors-ligne au bon montant après 15 min.
+  - **Partiel (2026-10-29, `417216a`) :** le jeu démarre depuis la sauvegarde native. **Reste à faire :** l'étape 4 (seul un repli sur erreur de lecture existe, pas de délai de secours) et le scénario natif du « Fait quand ».
 
 - [ ] **FND-02 · Remplacer l'effacement par une chaîne de migrations**
   - Moi · Les deux · **3 h** · Dépend de : FND-01, STR-05
@@ -494,7 +499,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
 
 **Critère de sortie :** l'AAB signé est installé sur le OnePlus 12 depuis la piste de test interne, les pubs de test s'affichent et l'icône adaptative est correcte.
 
-- [ ] **AND-01 · Ajouter la plateforme Android** ★
+- [x] **AND-01 · Ajouter la plateforme Android** ★
   - Moi · Android · **2 h** · Dépend de : STR-02, STR-04, CPT-02
   - Fichiers : `package.json`, `android/`
   - Étapes :
@@ -504,8 +509,9 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     4. Vérifier `android/variables.gradle` (minSdk 24, compile et target 36) et `allowBackup="true"` dans le manifest (D5).
     5. Committer.
   - Fait quand : `npx cap open android` donne une synchronisation Gradle réussie.
+  - Fait le 2026-10-11 (`79616d2`). **Reste à faire :** l'étape 3 (scripts `sync:android` et `open:android`).
 
-- [ ] **AND-02 · Premier lancement sur OnePlus 12 avec les pubs de test** ★
+- [x] **AND-02 · Premier lancement sur OnePlus 12 avec les pubs de test** ★
   - Moi · Android · **3 h** · Dépend de : AND-01, FND-01
   - Pourquoi : les APIs des plugins communautaires n'ont jamais été exécutées (`BUILD_IOS.md` l.143-151). Valider aussi FND-01 sur appareil.
   - Fichiers : `android/app/src/main/AndroidManifest.xml`, `www/js/native-bridge.js`
@@ -515,6 +521,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     3. Suivre la console via `chrome://inspect` et corriger chaque dérive d'API. Un RevenueCat sans clé doit échouer proprement.
     4. Rejouer le scénario de FND-01.
   - Fait quand : 10 min de jeu, rewarded et interstitiel de test affichés, aucune erreur rouge sauf RevenueCat non configuré.
+  - Fait : jeu lancé sur le OnePlus 12, pubs de test affichées. **Reste à faire :** l'étape 4 (rejouer le scénario de FND-01).
 
 - [ ] **AND-03 · Bord à bord, zones sûres, orientation, permissions**
   - Moi · Android · **2 h** · Dépend de : AND-02
@@ -568,10 +575,10 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
   - Moi · Les deux · **1,5 h** · Dépend de : CPT-05, CPT-02
   - Fichiers : `.env.production`, `android/app/src/main/AndroidManifest.xml`
   - Étapes :
-    1. Créer 2 apps « Spacemerge » (Android et iOS), marquées « non publiée ».
-    2. Pour chacune, créer un bloc Récompense `rewarded_main` et un bloc Interstitiel `interstitial_bigbang`.
+    1. ~~Créer 2 apps « Spacemerge » (Android et iOS), marquées « non publiée ».~~ Fait le 2026-11-01.
+    2. **Reste à faire :** pour chacune, créer un bloc Récompense `rewarded_main` et un bloc Interstitiel `interstitial_bigbang`.
     3. Confidentialité et messages → « Réglementations européennes » : un message en français pour les 2 apps, avec « Gérer les options » et le lien vers la politique.
-    4. Reporter les IDs dans `.env.production`, et l'App ID Android dans le manifest (l'App ID iOS se fait en IOS-03).
+    4. Reporter les IDs dans `.env.production`, et ~~l'App ID Android dans le manifest (l'App ID iOS se fait en IOS-03)~~. App ID Android fait dans `strings.xml` (`76074d4`), App ID iOS fait dans `Info.plist`, le 2026-11-01.
   - Fait quand : les 4 blocs sont visibles et le message RGPD est publié.
 
 - [ ] **ADS-02 · Supprimer la bannière placeholder**
@@ -949,6 +956,8 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     4. Run sur simulateur, console via Safari → Développement → Simulateur.
     5. Committer.
   - Fait quand : le jeu tourne sur simulateur, les pubs de test s'affichent et la sauvegarde survit à un kill.
+  - **Partiel (2026-11-01) :** étapes 1 à 4 faites, le jeu tourne sur simulateur. **Reste à faire :** committer, puis vérifier les pubs de test et la sauvegarde après un kill.
+  - Xcode 27 : `npx cap run ios` échoue, car `native-run` ouvre `Simulator.app`, remplacé par `DeviceHub.app`. Lancer depuis Xcode (▶).
 
 - [ ] **IOS-02 · Signature, capacités et lancement sur iPhone réel**
   - Moi · iOS · **1,5 h** · Dépend de : IOS-01, CPT-03
@@ -956,14 +965,15 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     1. Xcode → Signing & Capabilities : équipe, signature automatique, bundle ID, capacité In-App Purchase. Pas de Game Center ni de Push.
     2. iPhone du Collègue (H-4) : activer le Mode développeur, puis Run.
   - Fait quand : l'app se lance sur un iPhone réel depuis Xcode.
+  - **Partiel (2026-11-01) :** l'app se lance sur l'iPhone du Collègue, signée avec l'équipe gratuite. **Reste à faire (après CPT-03) :** choisir l'équipe payante et ajouter la capacité In-App Purchase, indisponible avec l'équipe gratuite.
 
 - [ ] **IOS-03 · Compléter Info.plist et les réglages du projet**
   - Moi · iOS · **2 h** · Dépend de : IOS-01, ADS-01
   - Fichiers : `ios/App/App/Info.plist`, `ios/App/App.xcodeproj`
   - Étapes :
-    1. `GADApplicationIdentifier` : l'App ID iOS réel.
+    1. ~~`GADApplicationIdentifier` : l'App ID iOS réel.~~ Fait le 2026-11-01.
     2. `SKAdNetworkItems` : copier la liste officielle ⚠️ (doc AdMob iOS « Update your Info.plist »).
-    3. `ITSAppUsesNonExemptEncryption` = NO, `CFBundleDisplayName` = Spacemerge.
+    3. `ITSAppUsesNonExemptEncryption` = NO, ~~`CFBundleDisplayName` = Spacemerge~~ (déjà mis par le template).
     4. Portrait uniquement ; `TARGETED_DEVICE_FAMILY` = 1, iPhone seul (N-15).
     5. Pas de `NSUserTrackingUsageDescription` (D3). Version 1.0.0, build 1.
   - Fait quand : aucun avertissement AdMob au lancement, et Archive → Validate App passe.
@@ -1202,11 +1212,11 @@ Tant que le test fermé démarre au plus tard en S6, les 14 jours s'écoulent pe
 
 Environ 6,5 h au total : trois todos ce soir (2,5 h), STR-01 dès que tu as un créneau, STR-02 ce week-end.
 
-1. [ ] **CPT-01 · Accepter la licence Xcode et vérifier la chaîne d'outils** (0,5 h). Débloque `git` et `pod`, sans quoi rien ne se committe proprement.
+1. [x] **CPT-01 · Accepter la licence Xcode et vérifier la chaîne d'outils** (0,5 h). Débloque `git` et `pod`, sans quoi rien ne se committe proprement.
 2. [ ] **CPT-02 · Figer le nom, l'identifiant d'app et le statut DSA** (1 h). Identifiant décidé (`com.zappstudio.spacemerge`). Restent la recherche de nom par le Collègue et le statut DSA.
 3. [ ] **CPT-03 · S'inscrire à l'Apple Developer Program** (1 h). Le plus long délai externe du plan : à lancer ce soir, même si iOS arrive en S14.
-4. [ ] **STR-01 · Réparer `npm run build` en retirant le plugin Game Center** (1 h). Premier maillon ★ ; le build ne passe pas aujourd'hui.
-5. [ ] **STR-02 · Produire un `dist-www/` complet** (3 h). Sans ça, aucune app native ne peut afficher le jeu.
+4. [x] **STR-01 · Réparer `npm run build` en retirant le plugin Game Center** (1 h). Premier maillon ★ ; le build ne passe pas aujourd'hui.
+5. [x] **STR-02 · Produire un `dist-www/` complet** (3 h). Sans ça, aucune app native ne peut afficher le jeu.
 
 Pour compléter S1 : STR-04, CPT-05, CPT-06 (1,5 h).
 
