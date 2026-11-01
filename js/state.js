@@ -184,10 +184,11 @@ function migrateFromV1(old) {
   return fresh;
 }
 
-function loadState() {
+// Raw JSON save -> current state shape. Shared by loadState() (localStorage)
+// and native-bridge.js (Preferences). Missing or corrupt save: new game.
+function parseSave(raw) {
+  if (!raw) return defaultState();
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return defaultState();
     const data = JSON.parse(raw);
     if (!data) return defaultState();
     if (data.version === 1) return migrateFromV1(data);
@@ -201,8 +202,17 @@ function loadState() {
   }
 }
 
+function loadState() {
+  try {
+    return parseSave(localStorage.getItem(SAVE_KEY));
+  } catch (e) {
+    console.warn("localStorage indisponible, nouvelle partie.", e);
+    return defaultState();
+  }
+}
+
 // deepFill() only adds fields. This converts fields no longer read into their
-// current equivalent. Must run on every load path, including importSaveCode() and native-bridge.js.
+// current equivalent. Must run on every load path: parseSave() and importSaveCode().
 // Runs on the raw save, before deepFill(), so it can tell a missing field from a default one.
 function migrateRetiredFields(state) {
   // Older saves showed the "remove ads" prompt when adsWatched hit exactly 5, with no flag.
