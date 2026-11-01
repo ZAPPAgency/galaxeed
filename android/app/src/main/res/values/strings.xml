@@ -4,6 +4,6 @@
     <string name="title_activity_main">Spacemerge</string>
     <string name="package_name">com.zappstudio.spacemerge</string>
     <string name="custom_url_scheme">com.zappstudio.spacemerge</string>
-    <!-- Google's sample App ID (test ads only). Replace with the real AdMob App ID before release. -->
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <!-- Spacemerge Android App ID from the AdMob console (App settings). -->
+    <string name="admob_app_id">ca-app-pub-2677771131000988~1823748287</string>
 </resources>
