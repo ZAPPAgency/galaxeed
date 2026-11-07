@@ -317,6 +317,16 @@
       </div>
     </div>
 
+    <!-- Big Bang transition: rays and sparkles built by playBigBangAnimation() (ui.js).
+         Covers the screen so a tap anywhere skips it instead of reaching the grid. -->
+    <div class="bigBangFx hidden" id="bigBangFx">
+      <div class="bigBangFxCore"></div>
+      <div class="bigBangFxWhite"></div>
+      <div class="bigBangFxBurst" id="bigBangFxBurst"></div>
+      <div class="bigBangFxSparkles" id="bigBangFxSparkles"></div>
+      <div class="bigBangFxHint">Touche l'écran pour passer</div>
+    </div>
+
     <!-- Big Bang summary: shown right after confirming, recaps the finished run and points at what's next -->
     <div class="modalOverlay hidden" id="bigBangSummaryModal">
       <div class="modalCard">
