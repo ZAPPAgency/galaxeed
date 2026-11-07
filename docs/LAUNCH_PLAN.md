@@ -948,7 +948,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
 
 **Critère de sortie :** le build est installé sur un iPhone réel via TestFlight, et le rapport de confidentialité Xcode est généré.
 
-- [ ] **IOS-01 · Ajouter la plateforme iOS (SPM) et lancer sur simulateur**
+- [x] **IOS-01 · Ajouter la plateforme iOS (SPM) et lancer sur simulateur**
   - Moi · iOS · **2,5 h** · Dépend de : STR-02, STR-04, CPT-01, CPT-02, ADS-01
   - Fichiers : `ios/`, `package.json`
   - Étapes :
@@ -958,7 +958,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     4. Run sur simulateur, console via Safari → Développement → Simulateur.
     5. Committer.
   - Fait quand : le jeu tourne sur simulateur, les pubs de test s'affichent et la sauvegarde survit à un kill.
-  - **Partiel (2026-11-01) :** étapes 1 à 5 faites (#24). Le jeu tourne sur simulateur, et la sauvegarde survit à une réinstallation (un seul modal hors-ligne, pas de tutoriel). **Reste à faire :** vérifier les pubs de test.
+  - Fait le 2026-11-07 (étapes 1 à 5 dans #24). Le jeu tourne sur simulateur, la sauvegarde survit à une réinstallation (un seul modal hors-ligne, pas de tutoriel), et les pubs de test s'affichent sur iOS et sur Android.
   - Xcode 27 : `npx cap run ios` échoue, car `native-run` ouvre `Simulator.app`, remplacé par `DeviceHub.app`. Lancer depuis Xcode (▶).
 
 - [ ] **IOS-02 · Signature, capacités et lancement sur iPhone réel**
