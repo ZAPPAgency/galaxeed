@@ -358,7 +358,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     - `dist-www` ne contient ni `debug.js` ni `social-share.png`.
   - Fait le 2026-10-11 (`4efdeac`, option B). Il y a maintenant 42 tuiles. **Reste à faire :** l'étape 5 (commentaire dans `index.html`).
 
-- [ ] **STR-03 · Séparer les IDs de test et les IDs réels, avec un garde-fou de release**
+- [x] **STR-03 · Séparer les IDs de test et les IDs réels, avec un garde-fou de release**
   - Moi · Les deux · **2,5 h** · Dépend de : STR-02
   - Pourquoi : P0-7, N-16. Cliquer sur ses propres pubs réelles peut faire suspendre le compte AdMob.
   - Fichiers : `www/js/native-bridge.js`, `.env.staging`, `.env.production`, `scripts/build-native.mjs`, nouveau `scripts/check-release.mjs`, `package.json`, `.gitignore`
@@ -372,13 +372,14 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     4. `check-release.mjs` échoue si `dist-www/` contient `3940256099942544`, `YOUR_` ou `debug.js`, si une variable de production est vide, ou si `Info.plist` / `AndroidManifest.xml` contiennent un App ID d'exemple Google.
     5. `.gitignore` : `*.jks`, `*.keystore`, `*.p8`, `*service-account*.json`, `keystore.properties`.
   - Fait quand : `build:release` échoue avec un message clair tant que la production est incomplète, et `build:staging` passe.
+  - Fait le 2026-11-01. Écarts : `build:release` prend la plateforme (`npm run build:release -- android`) et ne vérifie que ses IDs, car Android sort avant que les clés iOS existent. Le build reste `scripts/copy-web.mjs`, et l'App ID Android est dans `strings.xml`. `build` pointe sur `build:staging`.
 
 - [ ] **STR-04 · Faire suivre `ios/` et `android/` par git**
   - Moi · Les deux · **0,5 h** · Dépend de : —
   - Pourquoi : S-3. `Info.plist`, entitlements, manifest et Gradle sont des sources.
   - Fichiers : `.gitignore`, `CLAUDE.md` §5
   - Étapes :
-    1. ~~Retirer `ios/` (l.3).~~ Fait le 2026-11-01, pas encore committé.
+    1. ~~Retirer `ios/` (l.3).~~ Fait le 2026-11-01 (#24).
     2. ~~Ignorer : `ios/App/App/public/`, `ios/App/build/`, `ios/App/Pods/`, `ios/DerivedData/`, `xcuserdata/`, `*.xcuserstate`, `android/.gradle/`, `android/build/`, `android/app/build/`, `android/local.properties`, `android/app/src/main/assets/public/`, `android/.idea/`.~~ Fait : les `.gitignore` générés par `cap add` dans `ios/` et `android/` couvrent déjà ces chemins.
     3. **Reste à faire :** `CLAUDE.md` §5 : remplacer « `ios/` and `android/` are generated (gitignored) » par « `ios/` and `android/` are committed; `cap sync` only regenerates `public/` and the plugin list. »
   - Fait quand : après AND-01 et IOS-01, `git status` ne montre ni `build/`, ni `public/`, ni `Pods/`.
@@ -956,7 +957,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     4. Run sur simulateur, console via Safari → Développement → Simulateur.
     5. Committer.
   - Fait quand : le jeu tourne sur simulateur, les pubs de test s'affichent et la sauvegarde survit à un kill.
-  - **Partiel (2026-11-01) :** étapes 1 à 4 faites, le jeu tourne sur simulateur. **Reste à faire :** committer, puis vérifier les pubs de test et la sauvegarde après un kill.
+  - **Partiel (2026-11-01) :** étapes 1 à 5 faites (#24). Le jeu tourne sur simulateur, et la sauvegarde survit à une réinstallation (un seul modal hors-ligne, pas de tutoriel). **Reste à faire :** vérifier les pubs de test.
   - Xcode 27 : `npx cap run ios` échoue, car `native-run` ouvre `Simulator.app`, remplacé par `DeviceHub.app`. Lancer depuis Xcode (▶).
 
 - [ ] **IOS-02 · Signature, capacités et lancement sur iPhone réel**
