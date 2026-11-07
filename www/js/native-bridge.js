@@ -69,14 +69,14 @@ async function bootNative() {
   };
 
   // ---- AdMob ----
-  // Replace ad-unit IDs below with your real AdMob unit IDs before release;
-  // these are Google's public TEST unit IDs and are safe to ship during QA.
-  const AD_UNITS = {
-    rewarded: "ca-app-pub-3940256099942544/1712485313",
-    interstitial: "ca-app-pub-3940256099942544/4411468910",
-  };
+  // IDs come from .env.staging (Google demo units) or .env.production, per platform.
+  const env = import.meta.env;
+  const isIos = Capacitor.getPlatform() === "ios";
+  const AD_UNITS = isIos
+    ? { rewarded: env.VITE_ADMOB_REWARDED_IOS, interstitial: env.VITE_ADMOB_INTERSTITIAL_IOS }
+    : { rewarded: env.VITE_ADMOB_REWARDED_ANDROID, interstitial: env.VITE_ADMOB_INTERSTITIAL_ANDROID };
   try {
-    await AdMob.initialize({ requestTrackingAuthorization: false, initializeForTesting: true });
+    await AdMob.initialize({ requestTrackingAuthorization: false, initializeForTesting: env.VITE_ADS_TESTING === "true" });
   } catch (e) { console.warn("AdMob init failed", e); }
 
   AdService.showRewarded = async function (_placementId) {
@@ -97,10 +97,11 @@ async function bootNative() {
   };
 
   // ---- RevenueCat (IAP) ----
-  // Replace with your real RevenueCat public SDK key (Project settings > API keys).
+  // Without a key, RevenueCat stays unconfigured and every purchase below fails cleanly.
+  const revenueCatKey = isIos ? env.VITE_RC_KEY_IOS : env.VITE_RC_KEY_ANDROID;
   try {
     await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
-    await Purchases.configure({ apiKey: "YOUR_REVENUECAT_PUBLIC_SDK_KEY" });
+    if (revenueCatKey) await Purchases.configure({ apiKey: revenueCatKey });
   } catch (e) { console.warn("RevenueCat init failed", e); }
 
   IAPService.purchase = async function (productId) {

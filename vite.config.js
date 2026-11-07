@@ -8,6 +8,7 @@ export default defineConfig({
   root: "www",
   base: "",
   publicDir: false,
+  envDir: "..", // .env.staging / .env.production sit at the repo root, outside the shipped www/
   build: {
     outDir: "../dist-www/js",
     emptyOutDir: false, // keeps the files copied by scripts/copy-web.mjs
