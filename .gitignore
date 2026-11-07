@@ -2,3 +2,12 @@ node_modules/
 dist-www/
 .DS_Store
 *.log
+
+# Signing keys and store credentials
+*.jks
+*.keystore
+*.p8
+*service-account*.json
+keystore.properties
+
+.idea/
