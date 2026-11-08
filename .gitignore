@@ -11,3 +11,6 @@ dist-www/
 keystore.properties
 
 .idea/
+
+# Launch plan and store docs stay local: the repo is public.
+docs/
