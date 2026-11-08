@@ -1,9 +1,7 @@
 name: Deploy to Pages
 
-# Publie le contenu de www/ (le jeu) sur la branche gh-pages, pas la racine du
-# repo : à la racine il n'y a pas d'index.html, donc GitHub Pages retombait sur
-# le README. www/ doit rester à sa place pour le build Vite/Capacitor iOS
-# (voir vite.config.js), d'où la publication via une branche gh-pages.
+# Publishes playgalaxeed.com to the gh-pages branch: the landing page (site/) at the
+# root and the game (www/) under /play/. www/ stays in place for the Vite/Capacitor build.
 on:
   push:
     branches: [main]
@@ -23,9 +21,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # site/CNAME must be part of every deploy: the action deletes files it doesn't
+      # publish, and GitHub drops the custom domain when CNAME disappears.
+      # privacy.html is also copied to the root, the URL given to the stores.
+      - name: Assemble the site
+        run: |
+          mkdir _site
+          cp -R site/. _site/
+          cp -R www _site/play
+          cp www/privacy.html _site/privacy.html
       - uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: www
+          folder: _site
           branch: gh-pages
           clean-exclude: |
             pr-preview
