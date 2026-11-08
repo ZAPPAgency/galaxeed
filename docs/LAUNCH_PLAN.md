@@ -1,7 +1,7 @@
 # Galaxeed — Plan de lancement iOS + Android
 
 **Rédigé le :** 2026-09-27, à partir de `main` @ `5043983` et de tous les fichiers de `docs/`.
-**Avancement mis à jour le :** 2026-11-07 (cases du §4 et du §7).
+**Avancement mis à jour le :** 2026-11-08 (cases du §4 et du §7).
 **Pour :** Moi (dev, code, build) et le Collègue (UI/UX, assets, marketing).
 
 **Légende**
@@ -275,7 +275,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     3. Trancher trader ou non-trader, et l'adresse publique (D9).
     4. ~~Remplacer « Hypothèse » par « Décidé le … » dans le §3.~~ Fait pour H-2 à H-4 et H-6 ; ajouter le statut DSA une fois tranché.
     5. ~~Mettre l'`appId` final à `capacitor.config.ts:6`~~ Fait (`e93ec95`). **Reste à faire :** supprimer le commentaire des lignes 3-4, devenu faux.
-    6. **Reste à faire :** renommer en Galaxeed ce qui vit hors du dépôt : dépôt GitHub (`ZAPPAgency/galaxeed`), 2 apps AdMob, projet RevenueCat.
+    6. ~~Renommer en Galaxeed ce qui vit hors du dépôt : dépôt GitHub (`ZAPPAgency/galaxeed`), 2 apps AdMob, projet RevenueCat.~~ Fait le 2026-11-08.
   - Fait quand : le §3 est à jour et `grep -n "com.example" capacitor.config.ts` ne renvoie rien.
 
 - [ ] **CPT-03 · S'inscrire à l'Apple Developer Program (individuel)** ⏳
@@ -305,7 +305,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
 
 - [x] **CPT-06 · Créer le compte RevenueCat**
   - Moi · Les deux · **0,5 h** · Dépend de : —
-  - Étapes : app.revenuecat.com → projet créé sous le nom « Spacemerge », à renommer (CPT-02). ⚠️ Vérifier le plafond de revenu du palier gratuit sur revenuecat.com/pricing.
+  - Étapes : app.revenuecat.com → projet créé sous le nom « Spacemerge », renommé « Galaxeed » le 2026-11-08 (CPT-02). ⚠️ Vérifier le plafond de revenu du palier gratuit sur revenuecat.com/pricing.
   - Fait quand : le projet est visible.
 
 - [ ] **CPT-07 · App Store Connect : accords, fiscalité, banque, fiche app** ⏳
@@ -319,12 +319,12 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     5. Business → statut DSA selon D9.
   - Fait quand : Paid Apps apparaît « Active » et la fiche app existe.
 
-- [ ] **CPT-08 · Créer l'adresse e-mail de support**
+- [x] **CPT-08 · Créer l'adresse e-mail de support**
   - Moi · Les deux · **0,5 h** · Dépend de : CPT-02
   - Pourquoi : e-mail public obligatoire dans les deux stores et dans la politique (I-07).
   - Étapes : créer une adresse dédiée avec transfert vers toi et le Collègue, puis tester l'envoi et la réponse.
   - Fait quand : un mail extérieur arrive, et la réponse repart depuis cette adresse.
-  - **Partiel (2026-11-08) :** adresse créée, `contact@playgalaxeed.com` (Infomaniak). **Reste à faire :** tester l'envoi et la réponse.
+  - **Fait (2026-11-08) :** `contact@playgalaxeed.com` chez Infomaniak (MX, SPF, DKIM et DMARC publiés) ; envoi et réponse testés, nom d'expéditeur « Galaxeed ». **Reste à faire :** confirmer le transfert vers le Collègue.
 
 ### Phase 1 — Structure et outillage
 
@@ -631,7 +631,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     2. Déclarer `https://zappagency.github.io` comme site web dans la fiche Play et comme URL marketing et support dans App Store Connect.
     3. `curl -s https://zappagency.github.io/app-ads.txt`.
   - Fait quand : curl renvoie la ligne `google.com, pub-…, DIRECT, f08c47fec0942fa0`.
-  - **Partiel (2026-11-08) :** le domaine `playgalaxeed.com` (H-8) remplace le dépôt `zappagency.github.io`, et `site/app-ads.txt` est publié à sa racine. **Reste à faire :** comparer la ligne avec AdMob → Apps → app-ads.txt, puis faire les étapes 2 et 3 avec `https://playgalaxeed.com`.
+  - **Partiel (2026-11-08) :** le domaine `playgalaxeed.com` (H-8) remplace le dépôt `zappagency.github.io`. `site/app-ads.txt` est publié à sa racine en HTTPS, avec une ligne identique à celle d'AdMob, et `curl -s https://playgalaxeed.com/app-ads.txt` la renvoie (étapes 1 et 3 faites). **Reste à faire :** l'étape 2 avec `https://playgalaxeed.com`, dès que les fiches existent (CPT-04, CPT-07). AdMob vérifie ensuite le fichier tout seul.
 
 - [ ] **ADS-07 · Tester les pubs de bout en bout**
   - Moi · Android (iOS en DST-06) · **2 h** · Dépend de : ADS-04, ADS-05
