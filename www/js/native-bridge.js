@@ -5,14 +5,15 @@
 // build keeps working unmodified in any browser. Without Capacitor, nothing below runs.
 //
 // It starts the game from the native save (bootGame in main.js) and replaces the
-// web stubs (AdService/IAPService in services.js, HapticService in audio.js,
-// saveState in state.js) with native-backed versions.
+// web stubs (AdService/IAPService/AppInfoService in services.js, HapticService
+// in audio.js, saveState in state.js) with native-backed versions.
 // The stubs are top-level `const` objects, which are not window properties:
 // patch them by name (HapticService.impact = …), never through window.
 //
 // Community plugin APIs (AdMob, RevenueCat) change across major versions:
 // check their README when upgrading.
 import { Capacitor } from "@capacitor/core";
+import { App } from "@capacitor/app";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { Preferences } from "@capacitor/preferences";
 import { LocalNotifications } from "@capacitor/local-notifications";
@@ -51,6 +52,17 @@ async function bootGameFromNativeSave() {
 }
 
 async function bootNative() {
+  // Patched before any await, so Settings never shows the web label on native.
+  AppInfoService.getVersionLabel = async function () {
+    try {
+      const { version, build } = await App.getInfo();
+      return `v${version} (${build})`;
+    } catch (e) {
+      console.warn("App.getInfo failed", e);
+      return "";
+    }
+  };
+
   await bootGameFromNativeSave();
 
   // ---- Status bar / splash ----

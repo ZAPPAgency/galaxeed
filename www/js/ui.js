@@ -1301,7 +1301,11 @@ function renderSettingsPanel() {
   support.href = `mailto:${SUPPORT_EMAIL}`; support.style.textDecoration = "none"; support.style.justifyContent = "center";
   dom.panelBody.appendChild(support);
 
-  dom.panelBody.appendChild(el("p", "desc", "Galaxeed — v1.0.0 (prototype)"));
+  const versionLine = el("p", "desc", "Galaxeed");
+  dom.panelBody.appendChild(versionLine);
+  AppInfoService.getVersionLabel().then((label) => {
+    if (label) versionLine.textContent = `Galaxeed — ${label}`;
+  });
 }
 
 // ---------------- Tutorial ----------------
