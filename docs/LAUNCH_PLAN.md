@@ -135,6 +135,7 @@ Relevé le 2026-09-27 sur `main` @ `5043983`. L'audit (`docs/AUDIT_AND_ROADMAP.m
 - **H-5** Temps disponible : 8 h/semaine pour toi, environ 4 h/semaine pour le Collègue.
 - **H-6 · Décidé le 2026-09-30.** Seule nouvelle dépendance autorisée : `@sentry/capacitor` (D10). Toute autre reste à valider (règle `CLAUDE.md`).
 - **H-7** ⚠️ Pays de résidence fiscale inconnu (Suisse ou France). Il ne change que le formulaire fiscal Apple et l'autorité citée dans la politique (PFPDT ou CNIL).
+- **H-8 · Décidé le 2026-11-08.** Domaine **`playgalaxeed.com`**, acheté chez Infomaniak sur le compte d'un ami ⚠️ (risque 10). GitHub Pages sert la landing à la racine (`site/`) et le jeu web sous `/play/`. E-mail : `contact@playgalaxeed.com`.
 
 ### D1. iOS et Android : dans quel ordre ?
 
@@ -492,7 +493,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
   - Pourquoi : N-08, N-09, I-07.
   - Fichiers : `www/js/ui.js:1296-1304`, `www/js/config.js`, `www/js/native-bridge.js`
   - Étapes :
-    1. Déclarer `PRIVACY_URL`, `TERMS_URL` et `SUPPORT_EMAIL` dans `config.js`, avec les URLs GitHub Pages absolues.
+    1. Déclarer `PRIVACY_URL`, `TERMS_URL` et `SUPPORT_EMAIL` dans `config.js`, avec les URLs absolues de `playgalaxeed.com`.
     2. ⚠️ Vérifier sur appareil que Capacitor ouvre les URLs externes dans le navigateur système. Sinon, le joueur resterait coincé sans bouton retour.
     3. Remplacer « v1.0.0 (prototype) » par la vraie version : `App.getInfo()` (version et build) via le bridge, « web » sur le web.
   - Fait quand : les 3 liens ouvrent le navigateur ou le mail et on revient dans l'app intacte ; `grep -rn prototype www/` ne renvoie rien.
@@ -628,6 +629,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     2. Déclarer `https://zappagency.github.io` comme site web dans la fiche Play et comme URL marketing et support dans App Store Connect.
     3. `curl -s https://zappagency.github.io/app-ads.txt`.
   - Fait quand : curl renvoie la ligne `google.com, pub-…, DIRECT, f08c47fec0942fa0`.
+  - **Partiel (2026-11-08) :** le domaine `playgalaxeed.com` (H-8) remplace le dépôt `zappagency.github.io`, et `site/app-ads.txt` est publié à sa racine. **Reste à faire :** comparer la ligne avec AdMob → Apps → app-ads.txt, puis faire les étapes 2 et 3 avec `https://playgalaxeed.com`.
 
 - [ ] **ADS-07 · Tester les pubs de bout en bout**
   - Moi · Android (iOS en DST-06) · **2 h** · Dépend de : ADS-04, ADS-05
@@ -667,7 +669,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     3. Ajouter bases légales, durée de conservation, droits (suppression via l'e-mail support), autorité de contrôle (CNIL ou PFPDT ⚠️ selon H-7), contact et date.
     4. Retirer ATT, bannière et Game Center.
     5. ⚠️ Ceci n'est pas un avis juridique : faire relire si possible.
-  - Fait quand : `https://zappagency.github.io/galaxeed/privacy.html` sert la nouvelle version, et chaque SDK de `package.json` y est cité.
+  - Fait quand : `https://playgalaxeed.com/privacy.html` sert la nouvelle version, et chaque SDK de `package.json` y est cité.
 
 - [ ] **CMP-02 · Rendre exactes les probabilités de la Boîte Cosmique**
   - Moi · Les deux · **2 h** · Dépend de : —
@@ -911,14 +913,14 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
 
 - [ ] **IAP-10 · Rédiger et publier les conditions d'utilisation**
   - Moi · Les deux · **1,5 h** · Dépend de : CPT-08
-  - Fichiers : nouveau `www/terms.html` (style de `privacy.html`)
+  - Fichiers : nouveau `www/terms.html` (style de `privacy.html`), à copier aussi à la racine dans `deploy.yml`, comme `privacy.html`
   - Étapes :
     1. Éditeur, objet du service.
     2. Achats et abonnement : renouvellement, résiliation, remboursements gérés par Apple et Google.
     3. Monnaie virtuelle sans valeur réelle, probabilités de la Boîte, contact, droit applicable ⚠️.
     4. Renvoi vers l'EULA standard d'Apple pour iOS.
     5. ⚠️ Ceci n'est pas un avis juridique.
-  - Fait quand : `https://zappagency.github.io/galaxeed/terms.html` répond.
+  - Fait quand : `https://playgalaxeed.com/terms.html` répond.
 
 - [ ] **IAP-11 · Tester Google Play Billing avec des testeurs de licence**
   - Moi · Android · **3 h** · Dépend de : IAP-05 à IAP-10
@@ -1101,8 +1103,9 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     2. Badges App Store et Google Play (« Bientôt » en attendant).
     3. Liens vers la confidentialité, les conditions et l'e-mail de support.
     4. FAQ sauvegarde : export de code, sauvegarde auto Android, pas de cloud en V1.
-    5. ⚠️ À trancher : la démo web (achats simulés gratuits) reste-t-elle en lien ?
+    5. ~~⚠️ À trancher : la démo web (achats simulés gratuits) reste-t-elle en lien ?~~ Décidé le 2026-11-08 : oui, sous `/play/`.
   - Fait quand : le HTML statique est livré et validé sur mobile.
+  - **Partiel (2026-11-08) :** première version sobre dans `site/index.html` : nom, accroche, stores « Bientôt », lien vers le jeu, confidentialité et contact. **Reste à faire :** les étapes 1, 2 (badges officiels au lancement) et 4.
 
 - [ ] **MKT-02 · Recruter les testeurs (au moins 20 sur Android, 10 sur iOS)**
   - Collègue · Les deux · **2 h** · Dépend de : — · Échéance : fin S5
