@@ -52,7 +52,9 @@ async function bootGameFromNativeSave() {
 }
 
 async function bootNative() {
-  // Patched before any await, so Settings never shows the web label on native.
+  // Patched before any await, so the first render never shows the web banner slot
+  // and Settings never shows the web version label.
+  AdService.hasBanner = false;
   AppInfoService.getVersionLabel = async function () {
     try {
       const { version, build } = await App.getInfo();
