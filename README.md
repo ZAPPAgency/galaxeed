@@ -7,11 +7,12 @@ il n'y en a pas d'autre.
 
 ## Déploiement web (pour tester sur téléphone)
 
-Le contenu de `www/` est déployé automatiquement sur **GitHub Pages** à
-chaque `git push` sur `main`, via GitHub Actions
-(`.github/workflows/deploy.yml`) :
+À chaque `git push` sur `main`, GitHub Actions
+(`.github/workflows/deploy.yml`) publie le site sur **GitHub Pages**, sous le
+domaine `playgalaxeed.com` (DNS chez Infomaniak) :
 
-**https://zappagency.github.io/galaxeed/**
+- **https://playgalaxeed.com/** : la landing page (`site/`) ;
+- **https://playgalaxeed.com/play/** : le jeu (`www/`).
 
 Aucune étape manuelle : éditer les fichiers dans `www/`, commit, push
 sur `main`, et la nouvelle version est en ligne en 1-2 minutes (suivre
@@ -26,11 +27,11 @@ git push
 **Sur une branche/PR (pas `main`)** : deux autres workflows publient une
 preview séparée, sans jamais toucher à l'URL ci-dessus :
 - `.github/workflows/preview.yml` ("Deploy PR previews") - une PR ouverte
-  obtient `https://zappagency.github.io/galaxeed/pr-preview/pr-<N>/`,
+  obtient `https://playgalaxeed.com/pr-preview/pr-<N>/`,
   mise à jour à chaque push sur la branche de la PR.
 - `.github/workflows/branch-preview.yml` ("Deploy branch previews") - toute
   autre branche poussée (sans PR ouverte dessus) obtient
-  `https://zappagency.github.io/galaxeed/branch-preview/<nom-de-branche>/`.
+  `https://playgalaxeed.com/branch-preview/<nom-de-branche>/`.
 
 Une workflow GitHub Actions est nécessaire (plutôt que le déploiement
 "classique" par branche) car `www/` est un sous-dossier — le build
