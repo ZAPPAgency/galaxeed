@@ -1319,3 +1319,9 @@ function godPowerCost(nextLevel) {
 // multiplier on the *deviation from neutral* so it works for both >1 and <1
 // base multipliers (see gods.js scaleGodEffects).
 const GOD_POWER_SCALING_PER_LEVEL = 0.15;
+
+// ---- External links (Settings panel) ----
+// Absolute: the native bundle has no privacy.html, and Capacitor opens
+// non-app URLs in the system browser.
+const PRIVACY_URL = "https://playgalaxeed.com/privacy.html";
+const SUPPORT_EMAIL = "contact@playgalaxeed.com";
