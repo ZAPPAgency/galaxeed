@@ -52,7 +52,7 @@ Relevé le 2026-09-27 sur `main` @ `5043983`. L'audit (`docs/AUDIT_AND_ROADMAP.m
 | **P0-3** VIP simulé en local | À faire | `input.js:1091-1093` fixe `vipUntil = Date.now() + 30 j` et `state.js:339-341` lit ce timestamp local. `remove_ads` (`input.js:1045-1047`) et `stardust_boost` (`input.js:1094-1096`) sont aussi de simples flags locaux. | IAP-05 |
 | **P0-4** Mentions d'abonnement, EULA | À faire | `renderShopPanel` (`ui.js:719-829`) n'a ni mention de renouvellement, ni lien CGU/EULA, ni lien confidentialité. Le seul lien confidentialité est dans les Réglages (`ui.js:1296-1298`) : il est relatif (`privacy.html`) et le fichier est absent du bundle natif. | IAP-09, IAP-10 |
 | **P0-5** Prix codés en dur | À faire | `config.js:1112-1179`. Les valeurs ont changé depuis l'audit : `remove_ads` 4,99 $, `vip_monthly` 5,99 $/mois. `ui.js:702-716` calcule un badge « +x % de valeur » en parsant ces chaînes. | IAP-08 |
-| **P0-6** ATT | À faire, Obsolète en V1 (D3) | `native-bridge.js:75` : `requestTrackingAuthorization: false`, aucun prompt. Le plugin AdMob installé expose déjà `requestTrackingAuthorization()` (`node_modules/@capacitor-community/admob/dist/esm/definitions.d.ts:33`) : aucun plugin ATT séparé ne sera nécessaire en v1.1. | V11-03 |
+| **P0-6** ATT | À faire en V1 (D3 décidé (a) le 2026-11-08) | `native-bridge.js:75` : `requestTrackingAuthorization: false`, aucun prompt. Le plugin AdMob installé expose déjà `requestTrackingAuthorization()` (`node_modules/@capacitor-community/admob/dist/esm/definitions.d.ts:33`) : aucun plugin ATT séparé ne sera nécessaire en v1.1. | V11-03 |
 | **P0-7** Identifiants de test | À faire | `native-bridge.js:70-73` : IDs de test **iOS** utilisés aussi sur Android. `:75` : `initializeForTesting: true`. `:99` : `YOUR_REVENUECAT_PUBLIC_SDK_KEY`. | STR-03, ADS-08 |
 | **P1-1** Cloud save | À faire, reporté (D5) | Aucun `CloudSaveService` dans `www/js/` (grep vide). | V11-02 |
 | **P1-2** Course au démarrage natif | À faire, **plus grave que décrit** | `main.js:20` charge `localStorage` et démarre tout de suite. `native-bridge.js:57-65` écrase ensuite l'état par `Object.assign`, sans re-render ni `deepFill`, et ignore silencieusement toute sauvegarde dont la version ≠ `SAVE_VERSION`. Comme le `saveState` natif (`:50-53`) n'écrit plus dans `localStorage`, celui-ci garde une copie figée des premières secondes de la 1re session. Conséquence : à chaque lancement, les gains hors-ligne (`main.js:66-78`) sont calculés sur cette copie périmée. | FND-01 |
@@ -134,7 +134,7 @@ Relevé le 2026-09-27 sur `main` @ `5043983`. L'audit (`docs/AUDIT_AND_ROADMAP.m
 - **H-4 · Confirmé le 2026-09-30.** Le Collègue a un iPhone : il sert pour IOS-02, TestFlight et la QA iOS.
 - **H-5** Temps disponible : 8 h/semaine pour toi, environ 4 h/semaine pour le Collègue.
 - **H-6 · Décidé le 2026-09-30.** Seule nouvelle dépendance autorisée : `@sentry/capacitor` (D10). Toute autre reste à valider (règle `CLAUDE.md`).
-- **H-7** ⚠️ Pays de résidence fiscale inconnu (Suisse ou France). Il ne change que le formulaire fiscal Apple et l'autorité citée dans la politique (PFPDT ou CNIL).
+- **H-7 · Décidé le 2026-11-08.** Résidence fiscale en **Suisse**. Conséquences : formulaire fiscal Apple au titre de la Suisse, et la politique cite la nLPD et le PFPDT, plus le RGPD pour les joueurs de l'UE.
 - **H-8 · Décidé le 2026-11-08.** Domaine **`playgalaxeed.com`**, acheté chez Infomaniak sur le compte d'un ami ⚠️ (risque 10). GitHub Pages sert la landing à la racine (`site/`) et le jeu web sous `/play/`. E-mail : `contact@playgalaxeed.com`.
 
 ### D1. iOS et Android : dans quel ordre ?
@@ -172,6 +172,7 @@ Relevé le 2026-09-27 sur `main` @ `5043983`. L'audit (`docs/AUDIT_AND_ROADMAP.m
   - L'ATT devient un bon exercice mesurable pour la v1.1 (V11-03).
   - **L'UMP reste obligatoire même en non personnalisé** : sans consentement, Google ne sert que des « pubs limitées » ⚠️.
 - **Impact.** −3 h. Corrige I-03 et I-04.
+- **Décidé le 2026-11-08 : (a)**, contre la recommandation. Pubs personnalisées, avec l'ATT sur iOS et l'UMP partout. Conséquences : ADS-03 ne passe pas `npa: true` ; V11-03 (ATT, ~6 h) passe en V1, avec IOS-03 ; CMP-01, CMP-05 et CMP-07 déclarent le suivi.
 
 ### D4. Consentement RGPD (EEE, Royaume-Uni, Suisse)
 
@@ -593,13 +594,13 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
   - Étapes : supprimer le `div`, la règle CSS, `dom.bannerAd` et la ligne 393. Puis bump du cache-buster dans un commit séparé (`CLAUDE.md`).
   - Fait quand : `grep -rn "bannerAd" www/` ne renvoie rien.
 
-- [ ] **ADS-03 · Rewarded confirmée par le SDK, pubs non personnalisées**
+- [ ] **ADS-03 · Rewarded confirmée par le SDK**
   - Moi · Les deux · **3 h** · Dépend de : STR-03, AND-02
   - Pourquoi : N-07, D3. Règle de `CLAUDE.md` : « Rewarded ads grant only after the SDK confirms the reward ».
   - Fichiers : `www/js/native-bridge.js:67-93`
   - Étapes :
     1. Écouter `RewardAdPluginEvents.Rewarded`, `Dismissed` et `FailedToShow`. Ne renvoyer `true` que si `Rewarded` arrive avant `Dismissed`.
-    2. Passer `npa: true` sur les deux formats.
+    2. ~~Passer `npa: true` sur les deux formats.~~ Annulé : pubs personnalisées (D3).
     3. Précharger la pub suivante à la fermeture. Sans pub disponible, renvoyer `false` : les appelants gèrent déjà le cas `!ok`.
     4. Piloter `initializeForTesting` et `testingDevices` par `VITE_ADS_TESTING`.
   - Fait quand : fermer la pub avant la fin ne donne aucune récompense, la regarder en entier donne la récompense, et en mode avion on a un message sans blocage.
@@ -664,12 +665,12 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     1. Rendre le texte valable pour l'App Store et pour Google Play.
     2. Lister les traitements réels :
        - sauvegarde locale, plus la sauvegarde système (Android Auto Backup, iCloud) ;
-       - AdMob non personnalisé : ID d'appareil, IP (donc localisation approximative), interactions, diagnostics ;
+       - AdMob, personnalisé avec consentement (UMP, ATT sur iOS) : ID d'appareil et identifiant publicitaire, IP (donc localisation approximative), interactions, diagnostics ;
        - UMP : consentement TCF ;
        - RevenueCat : ID anonyme et historique d'achats ;
        - Sentry : erreurs, sans PII.
     3. Ajouter bases légales, durée de conservation, droits (suppression via l'e-mail support), autorité de contrôle (CNIL ou PFPDT ⚠️ selon H-7), contact et date.
-    4. Retirer ATT, bannière et Game Center.
+    4. Retirer bannière et Game Center. Garder l'ATT (D3).
     5. ⚠️ Ceci n'est pas un avis juridique : faire relire si possible.
   - Fait quand : `https://playgalaxeed.com/privacy.html` sert la nouvelle version, et chaque SDK de `package.json` y est cité.
 
@@ -741,7 +742,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
   - Étapes :
     1. Écrire les réponses effectivement soumises.
     2. Refaire la QA en colonnes iOS et Android, avec les scénarios FND, ADS et IAP.
-    3. Retirer Fusion Express, la bannière et l'ATT.
+    3. Retirer Fusion Express et la bannière. Garder l'ATT (D3).
   - Fait quand : le Collègue a relu, sans trouver de contradiction avec `privacy.html`.
 
 - [ ] **OBS-01 · Remonter les erreurs JS avec Sentry (sans données personnelles)**
@@ -981,7 +982,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     2. `SKAdNetworkItems` : copier la liste officielle ⚠️ (doc AdMob iOS « Update your Info.plist »).
     3. `ITSAppUsesNonExemptEncryption` = NO, ~~`CFBundleDisplayName` = Galaxeed~~ (déjà mis par le template).
     4. Portrait uniquement ; `TARGETED_DEVICE_FAMILY` = 1, iPhone seul (N-15).
-    5. Pas de `NSUserTrackingUsageDescription` (D3). Version 1.0.0, build 1.
+    5. Ajouter `NSUserTrackingUsageDescription` (D3, V11-03). Version 1.0.0, build 1.
   - Fait quand : aucun avertissement AdMob au lancement, et Archive → Validate App passe.
 
 - [ ] **IOS-04 · Vérifier les manifestes de confidentialité**
@@ -1071,7 +1072,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
   - Étapes :
     1. Build release avec les IDs réels.
     2. Page de version : captures, textes, et **cocher les 4 IAP** (1re soumission).
-    3. Notes de review : « Pas de compte. Abonnement : Boutique → Pass Supernova. Restauration : Réglages → Restaurer mes achats. Probabilités : Boutique → Boîte Cosmique. Pubs non personnalisées, pas d'ATT. »
+    3. Notes de review : « Pas de compte. Abonnement : Boutique → Pass Supernova. Restauration : Réglages → Restaurer mes achats. Probabilités : Boutique → Boîte Cosmique. Pubs personnalisées seulement si l'ATT et l'UMP sont acceptés. »
     4. Choisir la publication manuelle.
   - Fait quand : le statut passe à « Waiting for Review ».
 
@@ -1237,7 +1238,7 @@ Estimations indicatives, à redécouper en todos de 4 h maximum au moment de les
 |---|---|---|---|
 | V11-01 | Anglais : scinder `config.js` (balance / contenu), puis i18n, fiches EN et captures EN ; ouvrir tous les pays (Belgique et Brésil à réévaluer). | ~48 h | S-2a, P2-1 |
 | V11-02 | Cloud save + Game Center / Play Games derrière `CloudSaveService`, avec modale de conflit. Évaluer un plugin Capacitor 8 unique (⚠️ maintenance à vérifier). | ~30 h | P1-1, P1-5 |
-| V11-03 | ATT + pubs personnalisées : `AdMob.requestTrackingAuthorization()` après le tutoriel, `NSUserTrackingUsageDescription`, App Privacy à mettre à jour ; mesurer l'eCPM avant/après. | ~6 h | P0-6 |
+| V11-03 | **Passé en V1 (D3, 2026-11-08).** ATT + pubs personnalisées : `AdMob.requestTrackingAuthorization()` après le tutoriel, `NSUserTrackingUsageDescription`, App Privacy à mettre à jour ; mesurer l'eCPM avant/après. | ~6 h | P0-6 |
 | V11-04 | Bannière adaptative, si les données de rétention le permettent. | ~8 h | P0-2 (A) |
 | V11-05 | Reste du catalogue : `stardust_boost`, `starter_pack` en consommable, `gems_large`, `gems_mega` ; crédit différé des achats en attente. | ~6 h | D8, IAP-06 |
 | V11-06 | Belgique : bloquer l'achat de Gems vers la Boîte Cosmique, ou rendre la Boîte non aléatoire (⚠️ avis juridique). | ~4 h | D7 |
