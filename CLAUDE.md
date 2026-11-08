@@ -29,7 +29,7 @@ forrestchang/andrej-karpathy-skills and drona23/claude-token-efficient.
 - Don't re-read a file you just read or edited.
 - Never open unless explicitly asked: `game-full.html` (200 KB, stale
   single-file build), `www/assets/**`, `assets/**`, images, `package-lock.json`, `dist-www/`, `ios/`, `android/`.
-- `docs/*.md` are App Store submission docs: read only the one relevant to the task.
+- `docs/*.md` are App Store submission docs, local only (gitignored, never commit them): read only the one relevant to the task.
 - Answers: concise, no preamble, no restating the request, no pasting back code you just wrote.
   Thorough in reasoning, brief in output.
 - Verify facts (plugin APIs, versions) in code or docs instead of guessing.

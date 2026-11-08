@@ -43,15 +43,14 @@ build Capacitor/iOS fonctionne (voir `vite.config.js`, `root: "www"`).
 
 - `www/` — le jeu lui-même (HTML/CSS/JS vanilla, sans framework ni étape
   de build). C'est le dossier déployé sur GitHub Pages (voir ci-dessus).
-- `docs/` — toute la documentation de soumission App Store : build iOS,
-  checklist QA, métadonnées, réponses aux questionnaires Apple
-  (confidentialité, classification d'âge). **Commencer par
-  `docs/BUILD_IOS.md`** pour le build natif.
+- `docs/` — documentation de soumission (build iOS, checklist QA,
+  métadonnées, questionnaires des stores). Gardée en local : non versionnée,
+  absente du dépôt public.
 - `capacitor.config.ts` / `package.json` — config du projet Capacitor.
   L'`appId` de `capacitor.config.ts` (`com.zappstudio.galaxeed`) doit
   correspondre à l'App ID créé dans App Store Connect.
 - `assets/` — icône source (1024×1024), jeu d'icônes iOS déjà généré (à
-  refaire, voir `docs/QA_CHECKLIST.md`), captures d'écran (à refaire
+  refaire), captures d'écran (à refaire
   aussi, elles datent d'avant plusieurs refontes de l'UI).
 - `game-full.html` — version à fichier unique
   (CSS/JS inlinés), utilisée pour tester le jeu ailleurs que via un
@@ -65,6 +64,6 @@ build Capacitor/iOS fonctionne (voir `vite.config.js`, `root: "www"`).
 
 ## Pour builder pour iOS
 
-Tout est détaillé dans [`docs/BUILD_IOS.md`](docs/BUILD_IOS.md) : comptes
+Tout est détaillé dans `docs/BUILD_IOS.md` (en local, non versionné) : comptes
 requis (Apple Developer, AdMob, RevenueCat), installation, build Vite,
 Xcode, StoreKit Sandbox, TestFlight.
