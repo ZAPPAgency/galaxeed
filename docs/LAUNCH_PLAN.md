@@ -323,6 +323,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
   - Pourquoi : e-mail public obligatoire dans les deux stores et dans la politique (I-07).
   - Étapes : créer une adresse dédiée avec transfert vers toi et le Collègue, puis tester l'envoi et la réponse.
   - Fait quand : un mail extérieur arrive, et la réponse repart depuis cette adresse.
+  - **Partiel (2026-11-08) :** adresse créée, `contact@playgalaxeed.com` (Infomaniak). **Reste à faire :** tester l'envoi et la réponse.
 
 ### Phase 1 — Structure et outillage
 
@@ -496,6 +497,7 @@ Format de chaque todo : responsable, plateforme, estimation et dépendances, pui
     2. ⚠️ Vérifier sur appareil que Capacitor ouvre les URLs externes dans le navigateur système. Sinon, le joueur resterait coincé sans bouton retour.
     3. Remplacer « v1.0.0 (prototype) » par la vraie version : `App.getInfo()` (version et build) via le bridge, « web » sur le web.
   - Fait quand : les 3 liens ouvrent le navigateur ou le mail et on revient dans l'app intacte ; `grep -rn prototype www/` ne renvoie rien.
+  - **Partiel (2026-11-08) :** `contact@playgalaxeed.com` remplace le placeholder dans `ui.js` et dans la politique. **Reste à faire :** les étapes 1 à 3.
 
 ### Phase 3 — Build Android
 
