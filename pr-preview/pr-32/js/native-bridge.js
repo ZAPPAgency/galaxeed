@@ -141,6 +141,8 @@ async function bootNative() {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "hidden") return;
     LocalNotifications.cancel({ notifications: [{ id: 1001 }, { id: 1002 }] }).catch(() => {});
+    // Inexact alarms: with an exact one, Android 12+ opens the "Alarms & reminders"
+    // settings every time the app is hidden. A reminder hours later needs no exact minute.
     LocalNotifications.schedule({
       notifications: [
         {
@@ -148,12 +150,14 @@ async function bootNative() {
           title: "Galaxeed",
           body: "Vos planètes ont produit du Stardust, venez récupérer !",
           schedule: { at: new Date(Date.now() + 4 * 3600 * 1000) },
+          isExactNotification: false,
         },
         {
           id: 1002,
           title: "Galaxeed",
           body: "Ne perdez pas votre série de connexion quotidienne !",
           schedule: { at: new Date(Date.now() + 20 * 3600 * 1000) },
+          isExactNotification: false,
         },
       ],
     }).catch((e) => console.warn("Schedule notification failed", e));
