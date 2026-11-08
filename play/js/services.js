@@ -1,10 +1,9 @@
 // Galaxeed - Ad & IAP abstraction layer.
 //
-// Game code only ever calls AdService.* and IAPService.*. On web this file
-// simulates both with visible modals so the whole monetization loop is
-// testable without a real SDK. On iOS (Étape 6) this file is swapped for an
-// implementation backed by an AdMob Capacitor plugin and RevenueCat — no
-// other game file needs to change.
+// Game code only ever calls AdService.*, IAPService.* and AppInfoService.*.
+// On web this file simulates ads and purchases with visible modals so the
+// whole monetization loop is testable without a real SDK. On native,
+// native-bridge.js replaces these methods with Capacitor-backed versions.
 "use strict";
 
 function simulatedModal({ title, body, durationMs, confirmLabel }) {
@@ -98,5 +97,12 @@ const IAPService = {
   },
   isSubscribed(productId) {
     return Game.state ? isVipActive(Game.state) : false;
+  },
+};
+
+// Version line of the Settings panel.
+const AppInfoService = {
+  async getVersionLabel() {
+    return "version web";
   },
 };

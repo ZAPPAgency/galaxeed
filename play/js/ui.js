@@ -1294,14 +1294,18 @@ function renderSettingsPanel() {
   dom.panelBody.appendChild(status);
 
   const priv = el("a", "btn ghost full", "Politique de confidentialité");
-  priv.href = "privacy.html"; priv.target = "_blank"; priv.style.textDecoration = "none"; priv.style.justifyContent = "center";
+  priv.href = PRIVACY_URL; priv.target = "_blank"; priv.style.textDecoration = "none"; priv.style.justifyContent = "center";
   dom.panelBody.appendChild(priv);
 
   const support = el("a", "btn ghost full", "Contacter le support");
-  support.href = "mailto:contact@playgalaxeed.com"; support.style.textDecoration = "none"; support.style.justifyContent = "center";
+  support.href = `mailto:${SUPPORT_EMAIL}`; support.style.textDecoration = "none"; support.style.justifyContent = "center";
   dom.panelBody.appendChild(support);
 
-  dom.panelBody.appendChild(el("p", "desc", "Galaxeed — v1.0.0 (prototype)"));
+  const versionLine = el("p", "desc", "Galaxeed");
+  dom.panelBody.appendChild(versionLine);
+  AppInfoService.getVersionLabel().then((label) => {
+    if (label) versionLine.textContent = `Galaxeed — ${label}`;
+  });
 }
 
 // ---------------- Tutorial ----------------
