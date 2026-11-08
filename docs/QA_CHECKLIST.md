@@ -66,7 +66,7 @@ StoreKit Sandbox dans cet environnement).
   L'app doit rester jouable et monétisable (pubs non personnalisées) si
   l'utilisateur refuse.
 - ✅ **Politique de confidentialité** rédigée et cohérente avec les
-  réponses App Privacy (`docs/privacy-policy.html`,
+  réponses App Privacy (`www/privacy.html`,
   `docs/APP_PRIVACY_ANSWERS.md`).
 - ✅ **Probabilités de la Boîte Cosmique divulguées** dans sa fiche
   boutique (Commun 50% / Rare 30% / Épique 15% / Légendaire 5%) - requis

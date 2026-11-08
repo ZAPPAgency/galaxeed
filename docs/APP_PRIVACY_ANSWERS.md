@@ -1,7 +1,7 @@
 # App Store Connect — App Privacy ("nutrition label")
 
 Réponses à cocher dans **App Store Connect → App Privacy**, en cohérence
-avec `privacy-policy.html` et l'intégration AdMob + RevenueCat + Game
+avec `www/privacy.html` et l'intégration AdMob + RevenueCat + Game
 Center prévue à l'Étape 6. **Vérifie ces cases une fois les vrais SDK
 branchés** : les réponses doivent refléter ce que le build final fait
 réellement, pas seulement ce scaffold.
