@@ -390,7 +390,7 @@ function updateFabs() {
   revealFab("fabRunUpgrades", fusions >= FAB_DISCOVERY_FUSIONS.fabRunUpgrades);
   // Secret: stays hidden until the first easter egg is found.
   revealFab("fabSecrets", state.easterEggs.unlockedIds.length > 0);
-  dom.bannerAd.classList.toggle("hidden", adsRemoved(state));
+  dom.bannerAd.classList.toggle("hidden", adsRemoved(state) || !AdService.hasBanner);
   updateQuestNotifDot();
 
   const god = state.gods.currentGodId ? getGod(state.gods.currentGodId) : null;
