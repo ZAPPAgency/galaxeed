@@ -55,6 +55,8 @@ function simulatedModal({ title, body, durationMs, confirmLabel }) {
 }
 
 const AdService = {
+  // Simulated banner slot under the grid. Native ships without a banner.
+  hasBanner: true,
   async showRewarded(placementId) {
     if (window.DEBUG_ADS) console.log("[AdService] rewarded placement:", placementId);
     await simulatedModal({
