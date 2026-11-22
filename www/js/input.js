@@ -697,7 +697,7 @@ function spinVisual(prizeIndex, cb) {
 // renderAll(): the "1 case débloquée" prize changes state.unlocked, so the grid must redraw.
 function finishWheelSpin(prize) {
   $("wheelResult").innerHTML = prize
-    ? `Gagné : ${withCurrencyIcons(prize.label)}`
+    ? `Gagné : ${withCurrencyIcons(wheelPrizeLabel(Game.state, prize))}`
     : "Déjà utilisé aujourd'hui.";
   Sfx.wheelWin();
   refreshWheelButtons();

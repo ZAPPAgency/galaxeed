@@ -254,15 +254,25 @@ function checkAchievements(state) {
 }
 
 // ---- Daily wheel ----
+// Stardust prizes have no fixed label: wheelPrizeLabel() shows the scaled amount.
 const WHEEL_PRIZES = [
-  { type: "stardust", amount: 200, weight: 30, label: "200 ✨" },
-  { type: "stardust", amount: 500, weight: 20, label: "500 ✨" },
+  { type: "stardust", amount: 200, invokes: 2, weight: 30 },
+  { type: "stardust", amount: 500, invokes: 5, weight: 20 },
   { type: "gems", amount: 10, weight: 20, label: "10 💎" },
   { type: "gems", amount: 25, weight: 10, label: "25 💎" },
   { type: "unlockCell", amount: 1, weight: 10, label: "1 case débloquée" },
   { type: "cosmicEnergy", amount: 1, weight: 5, label: "1 ⚡" },
-  { type: "stardust", amount: 1500, weight: 5, label: "1500 ✨" },
+  { type: "stardust", amount: 1500, invokes: 15, weight: 5 },
 ];
+// A Stardust prize pays `invokes` times the current Invoke cost, and never less than `amount`,
+// so the wheel stays worth spinning late in a run.
+function wheelPrizeAmount(state, prize) {
+  if (prize.type !== "stardust") return prize.amount;
+  return Math.max(prize.amount, prize.invokes * invokeCost(state.manualSpawnCount));
+}
+function wheelPrizeLabel(state, prize) {
+  return prize.type === "stardust" ? `${formatNumber(wheelPrizeAmount(state, prize))} ✨` : prize.label;
+}
 // Angular bounds of WHEEL_PRIZES[index], in degrees clockwise from 12 o'clock.
 // Shared by the wheel drawing (ui.js) and the landing spin (input.js) so they match.
 function wheelSegmentBounds(index) {
@@ -298,7 +308,7 @@ function spinWheel(state, isBonus) {
   if (isBonus && state.dailySpin.bonusUsed) return null;
   if (!isBonus && state.dailySpin.freeUsed) return null;
   const prize = pickWheelPrize(state);
-  if (prize.type === "stardust") grantStardust(state, prize.amount);
+  if (prize.type === "stardust") grantStardust(state, wheelPrizeAmount(state, prize));
   else if (prize.type === "gems") grantGems(state, prize.amount);
   else if (prize.type === "unlockCell") applyDailyReward(state, { type: "unlockCell" });
   else if (prize.type === "cosmicEnergy") state.cosmicEnergy += prize.amount;

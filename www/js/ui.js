@@ -1380,6 +1380,7 @@ function openWheelModal() {
   $("wheelResult").textContent = "";
   $("wheelEl").style.transform = "rotate(0deg)";
   wheelRotation = 0; // keep input.js's spin total in sync
+  refreshWheelLegend();
   refreshWheelButtons();
   $("wheelModal").classList.remove("hidden");
 }
@@ -1733,7 +1734,7 @@ function buildWheelSegments() {
     const swatch = el("span", "wheelLegendSwatch");
     swatch.style.background = color;
     item.appendChild(swatch);
-    item.appendChild(el("span", null, withCurrencyIcons(p.label)));
+    item.appendChild(el("span", "wheelLegendLabel")); // filled by refreshWheelLegend()
     legendEl.appendChild(item);
   });
   wheelEl.style.background =
@@ -1746,6 +1747,14 @@ function buildWheelSegments() {
     wheelEl.appendChild(line);
   });
   wheelEl.appendChild(el("div", "wheelHub"));
+}
+
+// Stardust prizes follow the Invoke cost (wheelPrizeAmount, retention.js), so labels are set on open.
+function refreshWheelLegend() {
+  const labels = $("wheelLegend").querySelectorAll(".wheelLegendLabel");
+  WHEEL_PRIZES.forEach((p, i) => {
+    labels[i].innerHTML = withCurrencyIcons(wheelPrizeLabel(Game.state, p));
+  });
 }
 
 // Rare shooting star behind the grid, at random intervals.
