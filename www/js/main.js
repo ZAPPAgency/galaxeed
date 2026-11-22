@@ -54,6 +54,7 @@ function bootGame(state) {
 
   buildStars();
   buildGridDom();
+  new ResizeObserver(fitGridToHeight).observe(dom.grid);
   wireEvents();
 
   ensureDailyQuests(state);

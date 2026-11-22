@@ -43,6 +43,21 @@ function buildGridDom() {
   }
 }
 
+// Cells get their size from the grid's width (aspect-ratio 1/1). On a short screen the rows
+// would be taller than the room left for the grid and cover the toolbar and the banner, so
+// the width is capped from that height. Run by a ResizeObserver (bootGame, main.js): the
+// room also changes when the fabs wrap onto another line.
+// --cell-size lets the CSS scale what sits inside a cell (the unlock cost).
+function fitGridToHeight() {
+  const gap = parseFloat(getComputedStyle(dom.grid).rowGap) || 0;
+  const cellFromHeight = Math.max(0, (dom.grid.clientHeight - (ROWS - 1) * gap) / ROWS);
+  const cellFromWidth = (dom.grid.clientWidth - (COLS - 1) * gap) / COLS;
+  const maxWidth = Math.floor(cellFromHeight * COLS + (COLS - 1) * gap) + "px";
+  if (dom.grid.style.maxWidth !== maxWidth) dom.grid.style.maxWidth = maxWidth;
+  const cellSize = Math.floor(Math.min(cellFromHeight, cellFromWidth)) + "px";
+  if (dom.grid.style.getPropertyValue("--cell-size") !== cellSize) dom.grid.style.setProperty("--cell-size", cellSize);
+}
+
 function equippedEmojiSetDef() { return EMOJI_SETS.find(e => e.id === Game.state.equippedEmojiSet) || EMOJI_SETS[0]; }
 function tierStyle(tier) {
   const t = TIERS[tier - 1];
