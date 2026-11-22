@@ -916,15 +916,8 @@ function onSwapCellsClick() {
     renderAll();
     return;
   }
-  // Not enough Gems: offer an ad for a free swap instead.
+  // Not enough Gems: offer an ad for a free swap instead. No cooldown: one ad per swap.
   if (state.gems < cost) {
-    if (Date.now() < state.cooldowns.swapAdUntil) {
-      toast(
-        "Disponible dans " +
-          formatDuration(state.cooldowns.swapAdUntil - Date.now()),
-      );
-      return;
-    }
     confirmThenWatchAd(
       state,
       "Pas assez de Gems",
@@ -935,7 +928,6 @@ function onSwapCellsClick() {
         if (!adsRemoved(state)) toast("📺 Chargement de la publicité...");
         const ok = await watchRewardedAd(state, "swap_cells_free");
         if (!ok) return;
-        state.cooldowns.swapAdUntil = Date.now() + SWAP_AD_COOLDOWN_MS;
         state.adRewards.freeSwap = true;
         Game.swapArmed = true;
         Game.swapFree = true;

@@ -20,9 +20,6 @@ const BASE_OFFLINE_CAP_H = 8;
 const MAX_OFFLINE_CAP_H = 24;
 // Frequent on purpose: helps with unlock costs that grow fast late in a run.
 const UNLOCK_CELL_AD_COOLDOWN_MS = 2 * 60 * 60 * 1000;
-// Rewarded ad offered when swapping without enough Gems. Without a cooldown,
-// staying at 0 Gems would make swaps free forever.
-const SWAP_AD_COOLDOWN_MS = UNLOCK_CELL_AD_COOLDOWN_MS;
 // "+20 Gems": first claim of the day is free, then GEMS_AD_STREAK_SIZE ads in a row,
 // then a GEMS_AD_COOLDOWN_MS pause. See grantGemsFree()/grantGemsFromAd() (economy.js).
 const GEMS_AD_REWARD = 20;

@@ -264,7 +264,6 @@ function renderAll() {
 let lastHeaderRender = {};
 function updateHeader() {
   const state = Game.state;
-  const now = Date.now();
   const stardustStr = formatNumber(Game.displayedStardust);
   if (stardustStr !== lastHeaderRender.stardust) { dom.stardustValue.textContent = stardustStr; lastHeaderRender.stardust = stardustStr; }
 
@@ -286,18 +285,15 @@ function updateHeader() {
   const gemsDisabled = state.gems < GEMS_INVOKE_COST;
   if (gemsDisabled !== lastHeaderRender.gemsDisabled) { dom.invokeBtnGems.classList.toggle("disabled", gemsDisabled); lastHeaderRender.gemsDisabled = gemsDisabled; }
   // Not disabled when Gems are short: the button then offers a free swap with an ad.
-  // Disabled only during a swap selection or while that ad is on cooldown.
+  // Disabled only during a swap selection.
   const swapCost = SHOP_GEM_ITEMS.find(i => i.id === "swapCells").cost;
   const swapAffordable = state.gems >= swapCost;
-  const swapAdLeft = state.cooldowns.swapAdUntil - now;
   const swapFreeReady = state.adRewards.freeSwap; // ad already watched, swap not done yet (onSwapCellsClick, input.js)
-  const swapAdOnCooldown = !swapAffordable && !swapFreeReady && swapAdLeft > 0;
-  const swapDisabled = Game.swapArmed || swapAdOnCooldown;
+  const swapDisabled = Game.swapArmed;
   if (swapDisabled !== lastHeaderRender.swapDisabled) { dom.fabSwapCells.classList.toggle("disabled", swapDisabled); lastHeaderRender.swapDisabled = swapDisabled; }
   const swapLabel = swapAffordable && !swapFreeReady
     ? `<img class="inlineCurrencyIcon" src="assets/ui/gems_ad.png" alt="Gems">${swapCost}`
-    : (swapAdOnCooldown ? formatDuration(swapAdLeft)
-      : `<img class="inlineCurrencyIcon" src="assets/ui/watch-ad.png" alt="">Gratuit`);
+    : `<img class="inlineCurrencyIcon" src="assets/ui/watch-ad.png" alt="">Gratuit`;
   if (swapLabel !== lastHeaderRender.swapLabel) { dom.fabSwapCells.innerHTML = swapLabel; lastHeaderRender.swapLabel = swapLabel; }
 
   const canBB = hasUniverseTile(state);
