@@ -850,15 +850,24 @@ function onAutoClickerClick() {
     state,
     "Clicker automatique",
     "Ton clicker gratuit du jour est déjà utilisé. Regarde une publicité pour le relancer tout de suite, pour 10 minutes de plus.",
-    async () => {
-      if (!adsRemoved(state)) toast("📺 Chargement de la publicité...");
-      const ok = await watchRewardedAd(state, "auto_clicker");
-      if (!ok) return;
-      state.adRewards.autoClicker = true;
-      saveState(state);
-      armAutoClickerPicker();
-    },
+    watchAdForAutoClicker,
   );
+}
+async function watchAdForAutoClicker() {
+  const state = Game.state;
+  if (!adsRemoved(state)) toast("📺 Chargement de la publicité...");
+  const ok = await watchRewardedAd(state, "auto_clicker");
+  if (!ok) return;
+  state.adRewards.autoClicker = true;
+  saveState(state);
+  armAutoClickerPicker();
+}
+// Relaunch button of the "window over" modal. That modal already asked: no second confirmation.
+function onAutoClickerRelaunch() {
+  const state = Game.state;
+  $("autoClickerEndedModal").classList.add("hidden");
+  if (isAutoClickerFreeAvailable(state) || state.adRewards.autoClicker) armAutoClickerPicker();
+  else watchAdForAutoClicker();
 }
 function armAutoClickerPicker() {
   Game.autoClickerArmed = true;
@@ -883,6 +892,9 @@ function handleAutoClickerPick(idx) {
   updateFabs();
   saveState(state);
 }
+// True while a window runs in this session: lets tickAutoClicker() spot the moment it ends.
+// Not persisted, so a window that ended while the app was closed shows no prompt.
+let autoClickerWasActive = false;
 // Called every frame. grantTapBonus handles the per-cell cooldown, so no throttling here.
 function tickAutoClicker() {
   const state = Game.state;
@@ -891,6 +903,12 @@ function tickAutoClicker() {
   const isActive = idx !== null && ac.activeUntil > Date.now();
   if (idx !== null && cellEls[idx])
     cellEls[idx].classList.toggle("autoClickTarget", isActive);
+  if (isActive) autoClickerWasActive = true;
+  // Wait for a drag or another popup to finish before offering the relaunch.
+  else if (autoClickerWasActive && !pointerState && !document.querySelector(".modalOverlay:not(.hidden)")) {
+    autoClickerWasActive = false;
+    openAutoClickerEndedModal();
+  }
   if (!isActive || !state.grid[idx]) return; // inactive, or target cell empty (paused)
   if (grantTapBonus(idx, { auto: true })) playAutoClickEffect(idx);
 }
@@ -1246,7 +1264,8 @@ function wireClickSound() {
 // Never closable from the backdrop:
 // - godRitualModal: mandatory choice
 // - offlineModal: only its buttons pay out the offline gain
-const MODAL_BACKDROP_LOCKED = new Set(["godRitualModal", "offlineModal"]);
+// - autoClickerIntroModal: its button walks the player through a first activation
+const MODAL_BACKDROP_LOCKED = new Set(["godRitualModal", "offlineModal", "autoClickerIntroModal"]);
 function wireModalBackdropClose() {
   const closeHandlers = {
     godUnlockModal: closeGodUnlockModal,
@@ -1311,6 +1330,8 @@ function wireEvents() {
     // Through onAutoClickerClick: today's free use may already be spent from the Boutique.
     onAutoClickerClick();
   });
+  $("autoClickerEndedLater").addEventListener("click", () => $("autoClickerEndedModal").classList.add("hidden"));
+  $("autoClickerEndedRelaunch").addEventListener("click", onAutoClickerRelaunch);
   $("fabUnlockCellAd").addEventListener("click", onUnlockCellAd);
   dom.fabSwapCells.addEventListener("click", onSwapCellsClick);
   $("fabCurrentGod").addEventListener("click", () => openPanel("gods"));

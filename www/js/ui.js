@@ -302,6 +302,7 @@ function updateHeader() {
   let hint = "";
   if (Game.skipCellArmed) hint = "Choisis une case verrouillée à débloquer avec des Gems";
   else if (Game.swapArmed) hint = Game.swapFirstIdx === null ? "Échange : choisis la première case" : "Échange : choisis la seconde case";
+  else if (Game.autoClickerArmed) hint = "Clicker auto : touche la case à faire taper";
   else if (Game.selectedIdx !== null) {
     hint = "Case choisie pour la prochaine invocation";
   }
@@ -1236,10 +1237,22 @@ function closeVipGemsModal() { $("vipGemsModal").classList.add("hidden"); }
 // ---------------- Auto-clicker intro (first-time guide) ----------------
 function openAutoClickerIntroModal() {
   const state = Game.state;
-  // Marked as shown on open: a backdrop close skips the buttons.
+  // Marked as shown on open: the app can be closed before the button is tapped.
   state.autoClicker.tutorialShown = true;
   saveState(state);
   $("autoClickerIntroModal").classList.remove("hidden");
+}
+
+// Shown when an auto-clicker window ends (tickAutoClicker, input.js).
+// No ad is needed with today's free use, an ad already watched, or ads removed.
+function openAutoClickerEndedModal() {
+  const state = Game.state;
+  const needsAd = !isAutoClickerFreeAvailable(state) && !state.adRewards.autoClicker && !adsRemoved(state);
+  $("autoClickerEndedText").textContent = needsAd
+    ? "Ton clicker a fini de taper. Regarde une publicité pour le relancer 10 minutes et continuer à gagner du Stardust sans effort."
+    : "Ton clicker a fini de taper. Relance-le 10 minutes pour continuer à gagner du Stardust sans effort.";
+  $("autoClickerEndedRelaunch").textContent = needsAd ? "Relancer (pub)" : "Relancer";
+  $("autoClickerEndedModal").classList.remove("hidden");
 }
 
 function renderSettingsPanel() {
