@@ -147,6 +147,7 @@ function bootGame(state) {
       if (info.gain >= 1) openOfflineModal(info, spawned); // adds to an uncollected gain
     }
     maybeOpenVipGemsModal();
+    resetPageScroll(); // focus also fires after a full-screen ad
     lastFrame = performance.now();
     saveState(Game.state);
     resuming = false;
@@ -162,6 +163,17 @@ function bootGame(state) {
   });
   window.addEventListener("focus", handleAppResume);
   window.addEventListener("pageshow", handleAppResume);
+
+  window.addEventListener("scroll", resetPageScroll, { passive: true });
+  document.addEventListener("focusout", resetPageScroll); // keyboard closing
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", resetPageScroll);
+}
+
+// The page never scrolls on purpose. iOS can still leave it scrolled by a few points after
+// the keyboard, a toolbar change or a full-screen ad, and every tap then lands below what
+// is drawn. Snapping back to the origin realigns taps with the screen.
+function resetPageScroll() {
+  if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
 }
 
 // native-bridge.js is a module, so it runs before DOMContentLoaded. On native it
