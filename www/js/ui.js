@@ -1469,11 +1469,8 @@ function openStardustInfoModal() {
 function closeStardustInfoModal() { $("stardustInfoModal").classList.add("hidden"); }
 
 // ---------------- Purchase confirmation (every IAP) ----------------
-// A toast alone was easy to miss, especially for VIP where the actual
-// effect (double production, no ads, all skins) isn't dramatic-looking on
-// its own - state.js's isVipActive()/productionMultiplier()/isSkinOwned()
-// already read state.iap.vipUntil live the instant it's set in onBuyIAP,
-// this modal just makes that unmistakable instead of easy to doubt.
+// A modal, not a toast: VIP effects (double production, no ads, all skins) are not
+// visible at a glance. They apply as soon as IAPService.purchase sets state.iap.vipUntil.
 function openPurchaseConfirmModal(product) {
   // No icon prefix: the animated checkmark above the title already shows it.
   $("purchaseConfirmTitle").textContent = product.name;
