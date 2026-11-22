@@ -147,6 +147,7 @@ function bootGame(state) {
       if (info.gain >= 1) openOfflineModal(info, spawned); // adds to an uncollected gain
     }
     maybeOpenVipGemsModal();
+    resetPageScroll(); // focus also fires after a full-screen ad
     lastFrame = performance.now();
     saveState(Game.state);
     resuming = false;
@@ -162,6 +163,21 @@ function bootGame(state) {
   });
   window.addEventListener("focus", handleAppResume);
   window.addEventListener("pageshow", handleAppResume);
+
+  window.addEventListener("scroll", resetPageScroll, { passive: true });
+  document.addEventListener("focusout", resetPageScroll); // keyboard closing
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", resetPageScroll);
+    window.visualViewport.addEventListener("scroll", resetPageScroll);
+  }
+}
+
+// The page never scrolls on purpose. A mobile WebView can still leave the page or its visual
+// viewport shifted after the keyboard, a system bar change or a full-screen ad, and every
+// tap then lands below what is drawn. Snapping back to the origin realigns taps with the
+// screen. Unconditional: window.scrollY does not report a visual viewport offset.
+function resetPageScroll() {
+  window.scrollTo(0, 0);
 }
 
 // native-bridge.js is a module, so it runs before DOMContentLoaded. On native it

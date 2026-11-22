@@ -602,13 +602,29 @@
       </div>
     </div>
 
-    <!-- Auto-clicker intro, shown once when fabAutoClicker first appears (openAutoClickerIntroModal, ui.js). -->
+    <!-- Auto-clicker intro, shown once when fabAutoClicker first appears (openAutoClickerIntroModal, ui.js).
+         Backdrop-locked (MODAL_BACKDROP_LOCKED, input.js): the button starts the first activation. -->
     <div class="modalOverlay hidden" id="autoClickerIntroModal">
       <div class="modalCard" style="text-align: center">
         <img class="uiIcon" src="assets/ui/boost.png" alt="" style="width:64px;height:64px;margin:0 auto 10px;display:block;" />
-        <h3>Clicker Automatique</h3>
-        <p class="desc">Place-le sur une case et il tape à ta place pendant 10 minutes, même l'application fermée. Une activation gratuite chaque jour, et autant de relances que tu veux ensuite en regardant une publicité.</p>
+        <h3>Nouveau : le Clicker Automatique</h3>
+        <p class="desc">Il tape une case à ta place pendant 10 minutes, même l'application fermée. Chaque tap rapporte du Stardust.</p>
+        <p class="desc">Astuce : place-le sur ta meilleure case, c'est elle qui rapporte le plus.</p>
+        <p class="desc">Tu as une activation gratuite chaque jour. Quand il s'arrête, relance-le avec une publicité, autant de fois que tu veux.</p>
         <button class="btn primary full" id="autoClickerIntroPick">Choisir ma case</button>
+      </div>
+    </div>
+
+    <!-- Auto-clicker window over, offers a relaunch (openAutoClickerEndedModal, ui.js). -->
+    <div class="modalOverlay hidden" id="autoClickerEndedModal">
+      <div class="modalCard" style="text-align: center">
+        <img class="uiIcon" src="assets/ui/boost.png" alt="" style="width:64px;height:64px;margin:0 auto 10px;display:block;" />
+        <h3>Clicker Automatique terminé</h3>
+        <p class="desc" id="autoClickerEndedText"></p>
+        <div class="modalBtns">
+          <button class="btn" id="autoClickerEndedLater">Plus tard</button>
+          <button class="btn primary" id="autoClickerEndedRelaunch"></button>
+        </div>
       </div>
     </div>
 

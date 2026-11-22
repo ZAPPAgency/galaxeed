@@ -264,7 +264,6 @@ function renderAll() {
 let lastHeaderRender = {};
 function updateHeader() {
   const state = Game.state;
-  const now = Date.now();
   const stardustStr = formatNumber(Game.displayedStardust);
   if (stardustStr !== lastHeaderRender.stardust) { dom.stardustValue.textContent = stardustStr; lastHeaderRender.stardust = stardustStr; }
 
@@ -286,18 +285,15 @@ function updateHeader() {
   const gemsDisabled = state.gems < GEMS_INVOKE_COST;
   if (gemsDisabled !== lastHeaderRender.gemsDisabled) { dom.invokeBtnGems.classList.toggle("disabled", gemsDisabled); lastHeaderRender.gemsDisabled = gemsDisabled; }
   // Not disabled when Gems are short: the button then offers a free swap with an ad.
-  // Disabled only during a swap selection or while that ad is on cooldown.
+  // Disabled only during a swap selection.
   const swapCost = SHOP_GEM_ITEMS.find(i => i.id === "swapCells").cost;
   const swapAffordable = state.gems >= swapCost;
-  const swapAdLeft = state.cooldowns.swapAdUntil - now;
   const swapFreeReady = state.adRewards.freeSwap; // ad already watched, swap not done yet (onSwapCellsClick, input.js)
-  const swapAdOnCooldown = !swapAffordable && !swapFreeReady && swapAdLeft > 0;
-  const swapDisabled = Game.swapArmed || swapAdOnCooldown;
+  const swapDisabled = Game.swapArmed;
   if (swapDisabled !== lastHeaderRender.swapDisabled) { dom.fabSwapCells.classList.toggle("disabled", swapDisabled); lastHeaderRender.swapDisabled = swapDisabled; }
   const swapLabel = swapAffordable && !swapFreeReady
     ? `<img class="inlineCurrencyIcon" src="assets/ui/gems_ad.png" alt="Gems">${swapCost}`
-    : (swapAdOnCooldown ? formatDuration(swapAdLeft)
-      : `<img class="inlineCurrencyIcon" src="assets/ui/watch-ad.png" alt="">Gratuit`);
+    : `<img class="inlineCurrencyIcon" src="assets/ui/watch-ad.png" alt="">Gratuit`;
   if (swapLabel !== lastHeaderRender.swapLabel) { dom.fabSwapCells.innerHTML = swapLabel; lastHeaderRender.swapLabel = swapLabel; }
 
   const canBB = hasUniverseTile(state);
@@ -306,6 +302,7 @@ function updateHeader() {
   let hint = "";
   if (Game.skipCellArmed) hint = "Choisis une case verrouillée à débloquer avec des Gems";
   else if (Game.swapArmed) hint = Game.swapFirstIdx === null ? "Échange : choisis la première case" : "Échange : choisis la seconde case";
+  else if (Game.autoClickerArmed) hint = "Clicker auto : touche la case à faire taper";
   else if (Game.selectedIdx !== null) {
     hint = "Case choisie pour la prochaine invocation";
   }
@@ -1240,10 +1237,22 @@ function closeVipGemsModal() { $("vipGemsModal").classList.add("hidden"); }
 // ---------------- Auto-clicker intro (first-time guide) ----------------
 function openAutoClickerIntroModal() {
   const state = Game.state;
-  // Marked as shown on open: a backdrop close skips the buttons.
+  // Marked as shown on open: the app can be closed before the button is tapped.
   state.autoClicker.tutorialShown = true;
   saveState(state);
   $("autoClickerIntroModal").classList.remove("hidden");
+}
+
+// Shown when an auto-clicker window ends (tickAutoClicker, input.js).
+// No ad is needed with today's free use, an ad already watched, or ads removed.
+function openAutoClickerEndedModal() {
+  const state = Game.state;
+  const needsAd = !isAutoClickerFreeAvailable(state) && !state.adRewards.autoClicker && !adsRemoved(state);
+  $("autoClickerEndedText").textContent = needsAd
+    ? "Ton clicker a fini de taper. Regarde une publicité pour le relancer 10 minutes et continuer à gagner du Stardust sans effort."
+    : "Ton clicker a fini de taper. Relance-le 10 minutes pour continuer à gagner du Stardust sans effort.";
+  $("autoClickerEndedRelaunch").textContent = needsAd ? "Relancer (pub)" : "Relancer";
+  $("autoClickerEndedModal").classList.remove("hidden");
 }
 
 function renderSettingsPanel() {
@@ -1384,6 +1393,7 @@ function openWheelModal() {
   $("wheelResult").textContent = "";
   $("wheelEl").style.transform = "rotate(0deg)";
   wheelRotation = 0; // keep input.js's spin total in sync
+  refreshWheelLegend();
   refreshWheelButtons();
   $("wheelModal").classList.remove("hidden");
 }
@@ -1737,7 +1747,7 @@ function buildWheelSegments() {
     const swatch = el("span", "wheelLegendSwatch");
     swatch.style.background = color;
     item.appendChild(swatch);
-    item.appendChild(el("span", null, withCurrencyIcons(p.label)));
+    item.appendChild(el("span", "wheelLegendLabel")); // filled by refreshWheelLegend()
     legendEl.appendChild(item);
   });
   wheelEl.style.background =
@@ -1750,6 +1760,14 @@ function buildWheelSegments() {
     wheelEl.appendChild(line);
   });
   wheelEl.appendChild(el("div", "wheelHub"));
+}
+
+// Stardust prizes follow the Invoke cost (wheelPrizeAmount, retention.js), so labels are set on open.
+function refreshWheelLegend() {
+  const labels = $("wheelLegend").querySelectorAll(".wheelLegendLabel");
+  WHEEL_PRIZES.forEach((p, i) => {
+    labels[i].innerHTML = withCurrencyIcons(wheelPrizeLabel(Game.state, p));
+  });
 }
 
 // Rare shooting star behind the grid, at random intervals.

@@ -131,7 +131,7 @@ function defaultState() {
     },
     moonMergesThisRun: 0, // toward MOON_MERGES_TO_CHOOSE_GOD (first-god ritual)
 
-    cooldowns: { unlockCellAdUntil: 0, swapAdUntil: 0, gemsAdUntil: 0 },
+    cooldowns: { unlockCellAdUntil: 0, gemsAdUntil: 0 },
     // Rewards from a watched ad that haven't been used yet. Persisted because the OS
     // often reloads the WebView after a native ad, and the ad cooldown is already saved.
     adRewards: { freeSwap: false, autoClicker: false },
