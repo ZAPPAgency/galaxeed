@@ -21,6 +21,14 @@ const config: CapacitorConfig = {
       style: "DARK",
       overlaysWebView: false,
     },
+    // Android only. Without the hint, Capacitor pads the WebView for the system bars at
+    // launch, then removes the padding once it reads viewport-fit=cover from index.html
+    // (WebView 140+): the whole page jumps. "css" also injects --safe-area-inset-*,
+    // read by --safe-top / --safe-bottom in style.css.
+    SystemBars: {
+      insetsHandling: "css",
+      initialViewportFitValueHint: "cover",
+    },
     LocalNotifications: {
       smallIcon: "ic_stat_icon",
     },

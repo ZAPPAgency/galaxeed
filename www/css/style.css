@@ -14,8 +14,10 @@
   --danger:#f87171;
   --success:#34d399;
   --radius:14px;
-  --safe-top:env(safe-area-inset-top,0px);
-  --safe-bottom:env(safe-area-inset-bottom,0px);
+  /* --safe-area-inset-*: injected by Capacitor's SystemBars plugin on Android, where env()
+     can be wrong (WebView below 140). iOS and the web fall back to env(). */
+  --safe-top:var(--safe-area-inset-top, env(safe-area-inset-top,0px));
+  --safe-bottom:var(--safe-area-inset-bottom, env(safe-area-inset-bottom,0px));
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
 /* Blocks the iOS long-press "save image" menu and image dragging.
@@ -24,8 +26,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none;pointer-events:none;}
 html,body{margin:0;padding:0;height:100%;background:var(--bg-deep);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   overflow:hidden;overscroll-behavior:none;touch-action:none;}
-/* Pins the page: iOS can scroll a body with overflow:hidden (keyboard, toolbars),
-   which shifts tap targets away from what is drawn. See resetPageScroll() in main.js. */
+/* Pins the page: a mobile WebView can scroll a body with overflow:hidden (keyboard, system
+   bars), which shifts tap targets away from what is drawn. See resetPageScroll() in main.js. */
 body{position:fixed;inset:0;}
 
 #starsBg{position:fixed;inset:0;z-index:0;pointer-events:none;background:
