@@ -148,7 +148,14 @@ async function bootNative() {
     }
   };
   IAPService.restorePurchases = async function () {
-    try { await Purchases.restorePurchases(); } catch (e) { console.warn("Restore failed", e); }
+    try {
+      const { customerInfo } = await Purchases.restorePurchases();
+      applyEntitlements(Game.state, customerInfo);
+      return { success: true, hasPurchases: Object.keys(customerInfo.entitlements.active).length > 0 };
+    } catch (e) {
+      console.warn("Restore failed", e);
+      return { success: false, hasPurchases: false };
+    }
   };
   IAPService.isSubscribed = function (_productId) {
     return Game.state ? isVipActive(Game.state) : false;

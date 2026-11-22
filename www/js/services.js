@@ -92,6 +92,7 @@ const IAPService = {
     if (productId === "vip_monthly") Game.state.iap.vipUntil = Date.now() + SIMULATED_VIP_DURATION_MS;
     return { success: true, productId };
   },
+  // Same result shape as the native version in native-bridge.js.
   async restorePurchases() {
     await simulatedModal({
       title: "Restauration simulée",
@@ -99,6 +100,7 @@ const IAPService = {
       durationMs: 800,
       confirmLabel: "OK",
     });
+    return { success: true, hasPurchases: adsRemoved(Game.state) };
   },
   isSubscribed(productId) {
     return Game.state ? isVipActive(Game.state) : false;

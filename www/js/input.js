@@ -1097,8 +1097,14 @@ async function onBuyIAP(productId) {
   openPurchaseConfirmModal(product);
 }
 async function onRestorePurchases() {
-  await IAPService.restorePurchases();
-  toast("Achats restaurés.");
+  const res = await IAPService.restorePurchases();
+  if (!res.success) {
+    toast("Restauration impossible, réessaie.");
+    return;
+  }
+  toast(res.hasPurchases ? "Achats restaurés." : "Aucun achat à restaurer.");
+  saveState(Game.state);
+  renderAll();
   refreshCurrentPanel();
 }
 function onChooseGod(godId) {
