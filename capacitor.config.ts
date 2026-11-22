@@ -1,7 +1,6 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
-// Replace with your real reverse-DNS bundle ID before running `npx cap add ios`
-// (must match the App ID registered in App Store Connect / your Apple Developer account).
+// appId must match the bundle ID in App Store Connect and the package name in the Play Console.
 const config: CapacitorConfig = {
   appId: "com.zappstudio.galaxeed",
   appName: "Galaxeed",
