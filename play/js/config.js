@@ -1120,7 +1120,7 @@ const IAP_CATALOG = [
   // `perks`: one line per benefit, rendered as a list in the shop hero card.
   // The Gems value badge is computed at render time (passGemsValueBadgeText, ui.js).
   {
-    id: "vip_monthly",
+    id: "supernova_monthly",
     type: "subscription",
     name: "Pass Supernova",
     price: "5,99 $/mois",
@@ -1177,6 +1177,13 @@ const IAP_CATALOG = [
     amount: 3000,
   },
 ];
+
+// RevenueCat entitlement IDs: must match the RevenueCat dashboard (applyEntitlements in state.js).
+// no_ads is attached to remove_ads only: the VIP pass already removes ads through isVipActive().
+const ENTITLEMENT_NO_ADS = "no_ads";
+const ENTITLEMENT_VIP = "vip";
+// Web simulation only: on native, the store sets the VIP expiry.
+const SIMULATED_VIP_DURATION_MS = 30 * 24 * 3600 * 1000;
 
 // ---- Formulas ----
 function tierProd(tier) {
