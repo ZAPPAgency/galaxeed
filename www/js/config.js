@@ -1120,7 +1120,7 @@ const IAP_CATALOG = [
   // `perks`: one line per benefit, rendered as a list in the shop hero card.
   // The Gems value badge is computed at render time (passGemsValueBadgeText, ui.js).
   {
-    id: "vip_monthly",
+    id: "supernova_monthly",
     type: "subscription",
     name: "Pass Supernova",
     price: "5,99 $/mois",

@@ -89,7 +89,7 @@ const IAPService = {
     });
     // Simulated store entitlements. On native, applyEntitlements() reads them from RevenueCat.
     if (productId === "remove_ads") Game.state.iap.removeAds = true;
-    if (productId === "vip_monthly") Game.state.iap.vipUntil = Date.now() + SIMULATED_VIP_DURATION_MS;
+    if (productId === "supernova_monthly") Game.state.iap.vipUntil = Date.now() + SIMULATED_VIP_DURATION_MS;
     return { success: true, productId };
   },
   // Same result shape as the native version in native-bridge.js.

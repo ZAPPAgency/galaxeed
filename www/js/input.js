@@ -1041,7 +1041,7 @@ async function onBuyIAP(productId) {
   const res = await IAPService.purchase(productId);
   if (!res.success) return;
   const state = Game.state;
-  // remove_ads and vip_monthly are applied by IAPService.purchase (services.js, native-bridge.js).
+  // remove_ads and supernova_monthly are applied by IAPService.purchase (services.js, native-bridge.js).
   switch (productId) {
     case "starter_pack":
       // One-time purchase: never grant twice.

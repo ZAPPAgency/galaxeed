@@ -705,7 +705,7 @@ function parsePriceToNumber(priceStr) {
 }
 function passGemsValueBadgeText() {
   const smallPack = IAP_CATALOG.find(p => p.id === "gems_small");
-  const pass = IAP_CATALOG.find(p => p.id === "vip_monthly");
+  const pass = IAP_CATALOG.find(p => p.id === "supernova_monthly");
   if (!smallPack || !pass) return "";
   const perGem = parsePriceToNumber(smallPack.price) / smallPack.amount;
   const monthlyGemsValue = VIP_DAILY_GEMS * 30 * perGem;
@@ -783,11 +783,11 @@ function renderShopPanel() {
     return true;
   });
   const byId = (id) => visibleProducts.find(p => p.id === id);
-  const pass = byId("vip_monthly");
+  const pass = byId("supernova_monthly");
   const featuredIds = ["remove_ads", "stardust_boost"];
   const featured = featuredIds.map(byId).filter(Boolean);
   const featuredSet = new Set(featured.map(p => p.id));
-  const plain = visibleProducts.filter(p => p.id !== "vip_monthly" && !featuredSet.has(p.id));
+  const plain = visibleProducts.filter(p => p.id !== "supernova_monthly" && !featuredSet.has(p.id));
 
   const buyBtn = (product, cls) => {
     const label = product.type === "subscription" ? "S'abonner" : "Acheter";
@@ -1474,7 +1474,7 @@ function closeStardustInfoModal() { $("stardustInfoModal").classList.add("hidden
 function openPurchaseConfirmModal(product) {
   // No icon prefix: the animated checkmark above the title already shows it.
   $("purchaseConfirmTitle").textContent = product.name;
-  $("purchaseConfirmText").textContent = product.id === "vip_monthly"
+  $("purchaseConfirmText").textContent = product.id === "supernova_monthly"
     ? `Le Pass Supernova est actif dès maintenant : +100% de production, plus aucune pub, tous les skins débloqués, et tes ${VIP_DAILY_GEMS} Gems quotidiennes dès demain.`
     : `Achat confirmé - ${product.desc || "profite-en !"}`;
   $("purchaseConfirmModal").classList.remove("hidden");
@@ -1658,7 +1658,7 @@ const FUSION_PROMOS = {
     icon: "supernova.png",
     // Say "while active", not "forever": no ads only lasts while the Pass is active.
     text: "130 fusions déjà - le Pass Supernova retire les pubs tant qu'il est actif, double ta production de Stardust et t'offre 100 Gems chaque jour. Pensé pour les joueurs comme toi.",
-    productId: "vip_monthly",
+    productId: "supernova_monthly",
   },
 };
 let fusionPromoProductId = null;
