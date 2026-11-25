@@ -1088,7 +1088,7 @@ async function onBuyIAP(productId) {
       state.gems += product.amount;
       state.lifetime.gemsEarned += product.amount;
       break;
-    case "vip_monthly":
+    case "supernova_monthly":
       state.iap.vipUntil = Date.now() + 30 * 24 * 3600 * 1000;
       break;
     case "stardust_boost":
