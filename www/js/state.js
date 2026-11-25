@@ -352,6 +352,13 @@ function isVipActive(state) {
 function adsRemoved(state) {
   return state.iap.removeAds || isVipActive(state);
 }
+// Native only: RevenueCat decides what the player owns. Gems are never touched here:
+// consumables are credited once, at purchase time.
+function applyEntitlements(state, customerInfo) {
+  const active = customerInfo.entitlements.active;
+  state.iap.removeAds = Boolean(active[ENTITLEMENT_NO_ADS]);
+  state.iap.vipUntil = active[ENTITLEMENT_VIP] ? active[ENTITLEMENT_VIP].expirationDateMillis : 0;
+}
 // Owned one-time purchases are hidden from the shop and promos.
 // Consumables and the subscription always return false.
 function isOneTimeIapOwned(state, productId) {

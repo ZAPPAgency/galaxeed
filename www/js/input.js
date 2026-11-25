@@ -1041,10 +1041,8 @@ async function onBuyIAP(productId) {
   const res = await IAPService.purchase(productId);
   if (!res.success) return;
   const state = Game.state;
+  // remove_ads and supernova_monthly are applied by IAPService.purchase (services.js, native-bridge.js).
   switch (productId) {
-    case "remove_ads":
-      state.iap.removeAds = true;
-      break;
     case "starter_pack":
       // One-time purchase: never grant twice.
       if (state.iap.starterPack) break;
@@ -1088,9 +1086,6 @@ async function onBuyIAP(productId) {
       state.gems += product.amount;
       state.lifetime.gemsEarned += product.amount;
       break;
-    case "supernova_monthly":
-      state.iap.vipUntil = Date.now() + 30 * 24 * 3600 * 1000;
-      break;
     case "stardust_boost":
       state.iap.stardustBoost = true;
       break;
@@ -1102,8 +1097,14 @@ async function onBuyIAP(productId) {
   openPurchaseConfirmModal(product);
 }
 async function onRestorePurchases() {
-  await IAPService.restorePurchases();
-  toast("Achats restaurés.");
+  const res = await IAPService.restorePurchases();
+  if (!res.success) {
+    toast("Restauration impossible, réessaie.");
+    return;
+  }
+  toast(res.hasPurchases ? "Achats restaurés." : "Aucun achat à restaurer.");
+  saveState(Game.state);
+  renderAll();
   refreshCurrentPanel();
 }
 function onChooseGod(godId) {

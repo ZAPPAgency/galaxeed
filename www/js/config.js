@@ -1178,6 +1178,13 @@ const IAP_CATALOG = [
   },
 ];
 
+// RevenueCat entitlement IDs: must match the RevenueCat dashboard (applyEntitlements in state.js).
+// no_ads is attached to remove_ads only: the VIP pass already removes ads through isVipActive().
+const ENTITLEMENT_NO_ADS = "no_ads";
+const ENTITLEMENT_VIP = "vip";
+// Web simulation only: on native, the store sets the VIP expiry.
+const SIMULATED_VIP_DURATION_MS = 30 * 24 * 3600 * 1000;
+
 // ---- Formulas ----
 function tierProd(tier) {
   return 0.5 * Math.pow(2, tier - 1);

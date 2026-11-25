@@ -118,6 +118,21 @@ async function bootNative() {
     if (revenueCatKey) await Purchases.configure({ apiKey: revenueCatKey });
   } catch (e) { console.warn("RevenueCat init failed", e); }
 
+  // RevenueCat is the source of truth for remove_ads and the VIP pass. Offline, the last
+  // values saved in Game.state stay in use.
+  function syncEntitlements(customerInfo) {
+    applyEntitlements(Game.state, customerInfo);
+    saveState(Game.state);
+    renderAll();
+    refreshCurrentPanel();
+  }
+  if (revenueCatKey) {
+    try {
+      await Purchases.addCustomerInfoUpdateListener(syncEntitlements);
+      syncEntitlements((await Purchases.getCustomerInfo()).customerInfo);
+    } catch (e) { console.warn("RevenueCat customer info failed", e); }
+  }
+
   IAPService.purchase = async function (productId) {
     try {
       const offerings = await Purchases.getOfferings();
@@ -125,14 +140,22 @@ async function bootNative() {
         || offerings.current?.availablePackages.find(p => p.identifier === productId);
       if (!pkg) return { success: false, productId };
       const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
-      return { success: !!customerInfo, productId };
+      applyEntitlements(Game.state, customerInfo);
+      return { success: true, productId };
     } catch (e) {
       console.warn("Purchase failed", e);
       return { success: false, productId };
     }
   };
   IAPService.restorePurchases = async function () {
-    try { await Purchases.restorePurchases(); } catch (e) { console.warn("Restore failed", e); }
+    try {
+      const { customerInfo } = await Purchases.restorePurchases();
+      applyEntitlements(Game.state, customerInfo);
+      return { success: true, hasPurchases: Object.keys(customerInfo.entitlements.active).length > 0 };
+    } catch (e) {
+      console.warn("Restore failed", e);
+      return { success: false, hasPurchases: false };
+    }
   };
   IAPService.isSubscribed = function (_productId) {
     return Game.state ? isVipActive(Game.state) : false;
