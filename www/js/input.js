@@ -1395,7 +1395,7 @@ function wireEvents() {
     const product = IAP_CATALOG.find((p) => p.id === "remove_ads");
     openConfirmModal({
       title: product.name,
-      text: `${product.desc} — ${product.price}`,
+      text: iapConfirmText(product),
       confirmLabel: "Acheter",
       onConfirm: () => onBuyIAP("remove_ads"),
     });
@@ -1409,7 +1409,7 @@ function wireEvents() {
     if (!product) return;
     openConfirmModal({
       title: product.name,
-      text: `${product.desc || ""} — ${product.price}`,
+      text: iapConfirmText(product),
       confirmLabel: product.type === "subscription" ? "S'abonner" : "Acheter",
       onConfirm: () => onBuyIAP(id),
     });

@@ -105,6 +105,8 @@ const IAPService = {
   isSubscribed(productId) {
     return Game.state ? isVipActive(Game.state) : false;
   },
+  // No store on web: Game.storePrices stays undefined and IAP_CATALOG prices are shown.
+  async loadStorePrices() {},
 };
 
 // Version line of the Settings panel.

@@ -697,8 +697,31 @@ function renderCosmeticGrid(list, equippedId, onAfterAction) {
   return grid;
 }
 
-// Pass daily Gems value vs buying the same Gems in the shop, from live IAP_CATALOG prices.
-// Parses French prices like "0,99 $".
+// ---------------- Store prices ----------------
+// Game.storePrices maps a product ID to its localized store price (loadStorePrices in
+// native-bridge.js). It is undefined on web, where every product shows its IAP_CATALOG price.
+function isIapAvailable(product) {
+  return !Game.storePrices || product.id in Game.storePrices;
+}
+function iapPrice(product) {
+  return (Game.storePrices && Game.storePrices[product.id]) || product.price;
+}
+
+// Auto-renewal terms required wherever the subscription is sold (App Review 3.1.2).
+// A span, not a <p>: it is also inserted inside the confirm modal's paragraph.
+function subscriptionTermsHtml(product) {
+  return `<span class="iapTerms">Abonnement mensuel de ${iapPrice(product)}, renouvelé automatiquement chaque mois jusqu'à résiliation. Le paiement est débité sur ton compte App Store ou Google Play. Résilie à tout moment dans les réglages de ton compte, au plus tard 24 h avant la fin de la période en cours.
+    <a href="${TERMS_URL}" target="_blank" rel="noopener">Conditions d'utilisation</a> · <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Confidentialité</a></span>`;
+}
+
+// Confirm modal text before any real-money purchase.
+function iapConfirmText(product) {
+  const text = `${product.desc || ""} — ${iapPrice(product)}`;
+  return product.type === "subscription" ? text + subscriptionTermsHtml(product) : text;
+}
+
+// Pass daily Gems value vs buying the same Gems in the shop, from the displayed prices.
+// Parses prices like "0,99 €", "$0.99" or "CHF 1.00"; both prices share one currency.
 function parsePriceToNumber(priceStr) {
   const match = priceStr.replace(",", ".").match(/[\d.]+/);
   return match ? parseFloat(match[0]) : 0;
@@ -706,10 +729,10 @@ function parsePriceToNumber(priceStr) {
 function passGemsValueBadgeText() {
   const smallPack = IAP_CATALOG.find(p => p.id === "gems_small");
   const pass = IAP_CATALOG.find(p => p.id === "supernova_monthly");
-  if (!smallPack || !pass) return "";
-  const perGem = parsePriceToNumber(smallPack.price) / smallPack.amount;
+  if (!smallPack || !pass || !isIapAvailable(smallPack)) return "";
+  const perGem = parsePriceToNumber(iapPrice(smallPack)) / smallPack.amount;
   const monthlyGemsValue = VIP_DAILY_GEMS * 30 * perGem;
-  const passPrice = parsePriceToNumber(pass.price);
+  const passPrice = parsePriceToNumber(iapPrice(pass));
   if (!passPrice) return "";
   const percentMore = Math.round((monthlyGemsValue / passPrice - 1) * 100);
   return percentMore > 0 ? ` <span class="tag value">+${percentMore}% de valeur</span>` : "";
@@ -774,9 +797,16 @@ function renderShopPanel() {
   dom.panelBody.appendChild(renderCosmeticGrid(EMOJI_SETS, state.equippedEmojiSet));
 
   dom.panelBody.appendChild(el("h3", null, "Offres Premium"));
+  // No store prices yet (offline, or the store did not answer at launch): retry on each visit.
+  if (Game.storePrices && Object.keys(Game.storePrices).length === 0) {
+    dom.panelBody.appendChild(el("p", "desc", "Les offres sont indisponibles pour le moment. Vérifie ta connexion, puis reviens dans la boutique."));
+    IAPService.loadStorePrices();
+    return;
+  }
   // Curated order: Pass (hero), remove ads, Stardust boost, then the rest in catalog order.
   const daysSinceFirst = daysBetween(state.firstPlayedDay, todayStr());
   const visibleProducts = IAP_CATALOG.filter(product => {
+    if (!isIapAvailable(product)) return false;
     if (product.startersOnly && daysSinceFirst > 2) return false;
     if (isOneTimeIapOwned(state, product.id)) return false;
     if (product.skinId && state.iap.ownedSkinPacks.includes(product.skinId)) return false;
@@ -794,7 +824,7 @@ function renderShopPanel() {
     const btn = el("button", cls, label);
     btn.addEventListener("click", () => openConfirmModal({
       title: product.name,
-      text: `${product.desc || ""} — ${product.price}`,
+      text: iapConfirmText(product),
       confirmLabel: label,
       onConfirm: () => onBuyIAP(product.id),
     }));
@@ -805,7 +835,7 @@ function renderShopPanel() {
   if (pass) {
     const hero = el("div", "card iapCard iapHero");
     hero.innerHTML = `<div class="iapHeroBadge">★ Meilleure offre</div>
-      <div class="rowBetween"><h3><img class="inlineCurrencyIcon" src="assets/ui/supernova.png" alt=""> ${pass.name}</h3><span class="iapPrice">${pass.price}</span></div>
+      <div class="rowBetween"><h3><img class="inlineCurrencyIcon" src="assets/ui/supernova.png" alt=""> ${pass.name}</h3><span class="iapPrice">${iapPrice(pass)}</span></div>
       <p class="iapHeroTagline">${pass.desc}</p>`;
     const perkList = el("ul", "iapPerkList");
     (pass.perks || []).forEach(p => {
@@ -815,12 +845,13 @@ function renderShopPanel() {
     });
     hero.appendChild(perkList);
     hero.appendChild(buyBtn(pass, "btn primary full"));
+    hero.insertAdjacentHTML("beforeend", subscriptionTermsHtml(pass));
     dom.panelBody.appendChild(hero);
   }
 
   [...featured, ...plain].forEach(product => {
     const card = el("div", "card iapCard");
-    card.innerHTML = `<div class="rowBetween"><h3>${product.name}</h3><span class="iapPrice">${product.price}</span></div>
+    card.innerHTML = `<div class="rowBetween"><h3>${product.name}</h3><span class="iapPrice">${iapPrice(product)}</span></div>
       ${product.desc ? `<p class="desc">${product.desc}</p>` : ""}`;
     card.appendChild(buyBtn(product, "btn primary full"));
     dom.panelBody.appendChild(card);
@@ -1640,7 +1671,8 @@ function closeGemsMenuModal() { $("gemsMenuModal").classList.add("hidden"); }
 // ---------------- Remove-ads soft prompt (shown once, after the 5th rewarded ad) ----------------
 function openRemoveAdsPromptModal() {
   const product = IAP_CATALOG.find(p => p.id === "remove_ads");
-  $("removeAdsPromptBuy").textContent = `${product.name} — ${product.price}`;
+  if (!isIapAvailable(product)) return;
+  $("removeAdsPromptBuy").textContent = `${product.name} — ${iapPrice(product)}`;
   $("removeAdsPromptModal").classList.remove("hidden");
 }
 function closeRemoveAdsPromptModal() { $("removeAdsPromptModal").classList.add("hidden"); }
@@ -1665,13 +1697,13 @@ let fusionPromoProductId = null;
 function openFusionPromoModal(kind) {
   const promo = FUSION_PROMOS[kind];
   const product = promo && IAP_CATALOG.find(p => p.id === promo.productId);
-  if (!product || isOneTimeIapOwned(Game.state, product.id)) return; // already bought since the promo was queued
+  if (!product || !isIapAvailable(product) || isOneTimeIapOwned(Game.state, product.id)) return; // not sold, or bought since the promo was queued
   fusionPromoProductId = product.id;
   $("fusionPromoTitle").innerHTML = promo.icon
     ? `<img class="inlineCurrencyIcon" src="assets/ui/${promo.icon}" alt=""> ${promo.title}`
     : promo.title;
   $("fusionPromoText").textContent = promo.text;
-  $("fusionPromoBuy").textContent = product.type === "subscription" ? `S'abonner — ${product.price}` : `${product.name} — ${product.price}`;
+  $("fusionPromoBuy").textContent = product.type === "subscription" ? `S'abonner — ${iapPrice(product)}` : `${product.name} — ${iapPrice(product)}`;
   $("fusionPromoModal").classList.remove("hidden");
 }
 function closeFusionPromoModal() { $("fusionPromoModal").classList.add("hidden"); fusionPromoProductId = null; }

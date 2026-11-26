@@ -66,6 +66,8 @@ async function bootNative() {
   };
 
   await bootGameFromNativeSave();
+  // Native shop: only products with a store price are sold, filled by loadStorePrices() below.
+  Game.storePrices = {};
 
   // ---- Status bar / splash ----
   try {
@@ -160,6 +162,26 @@ async function bootNative() {
   IAPService.isSubscribed = function (_productId) {
     return Game.state ? isVipActive(Game.state) : false;
   };
+  // Localized prices of the current offering. renderShopPanel (ui.js) calls this again on
+  // each visit while the map is empty, so the guard stops overlapping requests.
+  let storePricesLoading = false;
+  IAPService.loadStorePrices = async function () {
+    if (!revenueCatKey || storePricesLoading) return;
+    storePricesLoading = true;
+    try {
+      const offerings = await Purchases.getOfferings();
+      const prices = {};
+      (offerings.current?.availablePackages || []).forEach(p => { prices[p.product.identifier] = p.product.priceString; });
+      if (Object.keys(prices).length === 0) return; // re-rendering would retry in a loop
+      Game.storePrices = prices;
+      refreshCurrentPanel();
+    } catch (e) {
+      console.warn("Store prices failed", e);
+    } finally {
+      storePricesLoading = false;
+    }
+  };
+  IAPService.loadStorePrices();
 
   // ---- Local notifications: "come back" reminder scheduled on background ----
   try { await LocalNotifications.requestPermissions(); } catch (e) { /* user may decline */ }
