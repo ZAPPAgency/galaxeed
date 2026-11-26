@@ -1,0 +1,214 @@
+// Galaxeed - native bridge (Capacitor build only).
+//
+// This file is the ONLY module-type script in index.html; every other game
+// file stays plain <script> (global functions, zero build step) so the web
+// build keeps working unmodified in any browser. Without Capacitor, nothing below runs.
+//
+// It starts the game from the native save (bootGame in main.js) and replaces the
+// web stubs (AdService/IAPService/AppInfoService in services.js, HapticService
+// in audio.js, saveState in state.js) with native-backed versions.
+// The stubs are top-level `const` objects, which are not window properties:
+// patch them by name (HapticService.impact = …), never through window.
+//
+// Community plugin APIs (AdMob, RevenueCat) change across major versions:
+// check their README when upgrading.
+import { Capacitor } from "@capacitor/core";
+import { App } from "@capacitor/app";
+import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
+import { Preferences } from "@capacitor/preferences";
+import { LocalNotifications } from "@capacitor/local-notifications";
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { AdMob } from "@capacitor-community/admob";
+import { Purchases, LOG_LEVEL } from "@revenuecat/purchases-capacitor";
+
+if (!Capacitor || !Capacitor.isNativePlatform || !Capacitor.isNativePlatform()) {
+  // Plain browser. The bare imports above only resolve in the Vite build, so the web
+  // build logs one expected, harmless console error here.
+} else {
+  window.nativeBoot = true; // main.js leaves the boot to bootGameFromNativeSave()
+  bootNative();
+}
+
+// Preferences is the source of truth on native: the OS can purge WebView storage.
+// The WebView's localStorage is read only while Preferences is still empty, to
+// keep games saved before the native save existed.
+async function bootGameFromNativeSave() {
+  let raw;
+  try {
+    raw = (await Preferences.get({ key: SAVE_KEY })).value;
+  } catch (e) {
+    // Keep the web saveState this session: a native save we could not read
+    // must not be overwritten.
+    console.warn("Lecture Preferences impossible", e);
+    bootGame(loadState());
+    return;
+  }
+  window.saveState = function nativeSaveState(state) {
+    state.lastSaveTime = Date.now();
+    Preferences.set({ key: SAVE_KEY, value: JSON.stringify(state) }).catch((e) => console.warn("Sauvegarde impossible", e));
+  };
+  bootGame(raw ? parseSave(raw) : loadState());
+}
+
+async function bootNative() {
+  // Patched before any await, so the first render never shows the web banner slot
+  // and Settings never shows the web version label.
+  AdService.hasBanner = false;
+  AppInfoService.getVersionLabel = async function () {
+    try {
+      const { version, build } = await App.getInfo();
+      return `v${version} (${build})`;
+    } catch (e) {
+      console.warn("App.getInfo failed", e);
+      return "";
+    }
+  };
+
+  await bootGameFromNativeSave();
+  // Native shop: only products with a store price are sold, filled by loadStorePrices() below.
+  Game.storePrices = {};
+
+  // ---- Status bar / splash ----
+  try {
+    await StatusBar.setStyle({ style: Style.Dark });
+    await StatusBar.setBackgroundColor({ color: "#05040d" });
+  } catch (e) { console.warn("StatusBar init failed", e); }
+
+  // ---- Haptics: replace the no-op web stub ----
+  const impactMap = { light: ImpactStyle.Light, medium: ImpactStyle.Medium, heavy: ImpactStyle.Heavy };
+  HapticService.impact = async (type) => {
+    try {
+      if (type === "success") await Haptics.notification({ type: NotificationType.Success });
+      else await Haptics.impact({ style: impactMap[type] || ImpactStyle.Medium });
+    } catch (e) { /* device may not support haptics */ }
+  };
+
+  // ---- AdMob ----
+  // IDs come from .env.staging (Google demo units) or .env.production, per platform.
+  const env = import.meta.env;
+  const isIos = Capacitor.getPlatform() === "ios";
+  const AD_UNITS = isIos
+    ? { rewarded: env.VITE_ADMOB_REWARDED_IOS, interstitial: env.VITE_ADMOB_INTERSTITIAL_IOS }
+    : { rewarded: env.VITE_ADMOB_REWARDED_ANDROID, interstitial: env.VITE_ADMOB_INTERSTITIAL_ANDROID };
+  try {
+    await AdMob.initialize({ requestTrackingAuthorization: false, initializeForTesting: env.VITE_ADS_TESTING === "true" });
+  } catch (e) { console.warn("AdMob init failed", e); }
+
+  AdService.showRewarded = async function (_placementId) {
+    try {
+      await AdMob.prepareRewardVideoAd({ adId: AD_UNITS.rewarded });
+      const result = await AdMob.showRewardVideoAd();
+      return !!result; // AdMob resolves showRewardVideoAd's promise once a reward is granted
+    } catch (e) {
+      console.warn("Rewarded ad failed", e);
+      return false;
+    }
+  };
+  AdService.showInterstitial = async function () {
+    try {
+      await AdMob.prepareInterstitial({ adId: AD_UNITS.interstitial });
+      await AdMob.showInterstitial();
+    } catch (e) { console.warn("Interstitial failed", e); }
+  };
+
+  // ---- RevenueCat (IAP) ----
+  // Without a key, RevenueCat stays unconfigured and every purchase below fails cleanly.
+  const revenueCatKey = isIos ? env.VITE_RC_KEY_IOS : env.VITE_RC_KEY_ANDROID;
+  try {
+    await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
+    if (revenueCatKey) await Purchases.configure({ apiKey: revenueCatKey });
+  } catch (e) { console.warn("RevenueCat init failed", e); }
+
+  // RevenueCat is the source of truth for remove_ads and the VIP pass. Offline, the last
+  // values saved in Game.state stay in use.
+  function syncEntitlements(customerInfo) {
+    applyEntitlements(Game.state, customerInfo);
+    saveState(Game.state);
+    renderAll();
+    refreshCurrentPanel();
+  }
+  if (revenueCatKey) {
+    try {
+      await Purchases.addCustomerInfoUpdateListener(syncEntitlements);
+      syncEntitlements((await Purchases.getCustomerInfo()).customerInfo);
+    } catch (e) { console.warn("RevenueCat customer info failed", e); }
+  }
+
+  IAPService.purchase = async function (productId) {
+    try {
+      const offerings = await Purchases.getOfferings();
+      const pkg = offerings.current?.availablePackages.find(p => p.product.identifier === productId)
+        || offerings.current?.availablePackages.find(p => p.identifier === productId);
+      if (!pkg) return { success: false, productId };
+      const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+      applyEntitlements(Game.state, customerInfo);
+      return { success: true, productId };
+    } catch (e) {
+      console.warn("Purchase failed", e);
+      return { success: false, productId };
+    }
+  };
+  IAPService.restorePurchases = async function () {
+    try {
+      const { customerInfo } = await Purchases.restorePurchases();
+      applyEntitlements(Game.state, customerInfo);
+      return { success: true, hasPurchases: Object.keys(customerInfo.entitlements.active).length > 0 };
+    } catch (e) {
+      console.warn("Restore failed", e);
+      return { success: false, hasPurchases: false };
+    }
+  };
+  IAPService.isSubscribed = function (_productId) {
+    return Game.state ? isVipActive(Game.state) : false;
+  };
+  // Localized prices of the current offering. renderShopPanel (ui.js) calls this again on
+  // each visit while the map is empty, so the guard stops overlapping requests.
+  let storePricesLoading = false;
+  IAPService.loadStorePrices = async function () {
+    if (!revenueCatKey || storePricesLoading) return;
+    storePricesLoading = true;
+    try {
+      const offerings = await Purchases.getOfferings();
+      const prices = {};
+      (offerings.current?.availablePackages || []).forEach(p => { prices[p.product.identifier] = p.product.priceString; });
+      if (Object.keys(prices).length === 0) return; // re-rendering would retry in a loop
+      Game.storePrices = prices;
+      refreshCurrentPanel();
+    } catch (e) {
+      console.warn("Store prices failed", e);
+    } finally {
+      storePricesLoading = false;
+    }
+  };
+  IAPService.loadStorePrices();
+
+  // ---- Local notifications: "come back" reminder scheduled on background ----
+  try { await LocalNotifications.requestPermissions(); } catch (e) { /* user may decline */ }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "hidden") return;
+    LocalNotifications.cancel({ notifications: [{ id: 1001 }, { id: 1002 }] }).catch(() => {});
+    // Inexact alarms: with an exact one, Android 12+ opens the "Alarms & reminders"
+    // settings every time the app is hidden. A reminder hours later needs no exact minute.
+    LocalNotifications.schedule({
+      notifications: [
+        {
+          id: 1001,
+          title: "Galaxeed",
+          body: "Vos planètes ont produit du Stardust, venez récupérer !",
+          schedule: { at: new Date(Date.now() + 4 * 3600 * 1000) },
+          isExactNotification: false,
+        },
+        {
+          id: 1002,
+          title: "Galaxeed",
+          body: "Ne perdez pas votre série de connexion quotidienne !",
+          schedule: { at: new Date(Date.now() + 20 * 3600 * 1000) },
+          isExactNotification: false,
+        },
+      ],
+    }).catch((e) => console.warn("Schedule notification failed", e));
+  });
+
+  await SplashScreen.hide();
+}
