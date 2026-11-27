@@ -1327,8 +1327,10 @@ function godPowerCost(nextLevel) {
 // base multipliers (see gods.js scaleGodEffects).
 const GOD_POWER_SCALING_PER_LEVEL = 0.15;
 
-// ---- External links (Settings panel) ----
+// ---- External links (Settings panel, subscription terms) ----
 // Absolute: the native bundle has no privacy.html, and Capacitor opens
 // non-app URLs in the system browser.
 const PRIVACY_URL = "https://playgalaxeed.com/privacy.html";
 const SUPPORT_EMAIL = "contact@playgalaxeed.com";
+// Apple's standard EULA, also named in the App Store description.
+const TERMS_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
