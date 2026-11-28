@@ -19,7 +19,7 @@ import { Preferences } from "@capacitor/preferences";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
-import { AdMob } from "@capacitor-community/admob";
+import { AdMob, AdmobConsentStatus, AdmobConsentDebugGeography } from "@capacitor-community/admob";
 import { Purchases, LOG_LEVEL } from "@revenuecat/purchases-capacitor";
 
 if (!Capacitor || !Capacitor.isNativePlatform || !Capacitor.isNativePlatform()) {
@@ -91,11 +91,46 @@ async function bootNative() {
   const AD_UNITS = isIos
     ? { rewarded: env.VITE_ADMOB_REWARDED_IOS, interstitial: env.VITE_ADMOB_INTERSTITIAL_IOS }
     : { rewarded: env.VITE_ADMOB_REWARDED_ANDROID, interstitial: env.VITE_ADMOB_INTERSTITIAL_ANDROID };
-  try {
-    await AdMob.initialize({ requestTrackingAuthorization: false, initializeForTesting: env.VITE_ADS_TESTING === "true" });
-  } catch (e) { console.warn("AdMob init failed", e); }
+  const adsTesting = env.VITE_ADS_TESTING === "true";
+
+  // Google's UMP consent (EEA, UK, Switzerland) comes before any ad request, then the
+  // SDK starts. It runs in the background: the game stays playable behind the form.
+  // debugGeography only applies on simulators and registered test devices.
+  let privacyOptionsRequired = false;
+  const adsReady = (async () => {
+    try {
+      let consent = await AdMob.requestConsentInfo(adsTesting ? { debugGeography: AdmobConsentDebugGeography.EEA } : {});
+      if (consent.isConsentFormAvailable && consent.status === AdmobConsentStatus.REQUIRED) {
+        consent = await AdMob.showConsentForm();
+      }
+      // The plugin does not export its PrivacyOptionsRequirementStatus enum; its values are strings.
+      privacyOptionsRequired = consent.privacyOptionsRequirementStatus === "REQUIRED";
+      if (!consent.canRequestAds) return false;
+      // ATT is asked separately, after the tutorial (requestTracking below).
+      await AdMob.initialize({ requestTrackingAuthorization: false, initializeForTesting: adsTesting });
+      return true;
+    } catch (e) {
+      console.warn("Ad consent or AdMob init failed", e);
+      return false;
+    }
+  })();
+
+  AdService.hasPrivacyOptions = () => privacyOptionsRequired;
+  AdService.showPrivacyOptions = async function () {
+    try { await AdMob.showPrivacyOptionsForm(); } catch (e) { console.warn("Privacy options form failed", e); }
+  };
+  // App Tracking Transparency, once the consent form is closed. iOS shows the prompt
+  // only while the status is undetermined, so repeated calls are harmless.
+  AdService.requestTracking = async function () {
+    if (!isIos) return;
+    await adsReady;
+    try { await AdMob.requestTrackingAuthorization(); } catch (e) { console.warn("ATT request failed", e); }
+  };
+  // Players past the tutorial (endTutorial in ui.js asks the others).
+  if (Game.state.tutorialSeen) AdService.requestTracking();
 
   AdService.showRewarded = async function (_placementId) {
+    if (!(await adsReady)) return false;
     try {
       await AdMob.prepareRewardVideoAd({ adId: AD_UNITS.rewarded });
       const result = await AdMob.showRewardVideoAd();
@@ -106,6 +141,7 @@ async function bootNative() {
     }
   };
   AdService.showInterstitial = async function () {
+    if (!(await adsReady)) return;
     try {
       await AdMob.prepareInterstitial({ adId: AD_UNITS.interstitial });
       await AdMob.showInterstitial();

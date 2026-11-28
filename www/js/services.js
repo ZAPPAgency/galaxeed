@@ -76,6 +76,10 @@ const AdService = {
       confirmLabel: "Fermer",
     });
   },
+  // No consent form or App Tracking Transparency on web (see native-bridge.js).
+  hasPrivacyOptions() { return false; },
+  async showPrivacyOptions() {},
+  async requestTracking() {},
 };
 
 const IAPService = {

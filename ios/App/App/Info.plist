@@ -71,5 +71,7 @@
 	<true />
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false />
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Ton identifiant publicitaire sert à te proposer des publicités plus pertinentes. Le jeu reste entièrement jouable si tu refuses.</string>
 </dict>
 </plist>

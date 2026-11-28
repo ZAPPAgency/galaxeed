@@ -1300,6 +1300,14 @@ function renderSettingsPanel() {
   restoreBtn.addEventListener("click", onRestorePurchases);
   dom.panelBody.appendChild(restoreBtn);
 
+  // Players under the consent form (EEA, UK, Switzerland) must be able to change their choice.
+  if (AdService.hasPrivacyOptions()) {
+    const adPrivacyBtn = el("button", "btn full", "Confidentialité des pubs");
+    adPrivacyBtn.style.marginTop = "8px";
+    adPrivacyBtn.addEventListener("click", () => AdService.showPrivacyOptions());
+    dom.panelBody.appendChild(adPrivacyBtn);
+  }
+
   const backupCard = el("div", "card");
   backupCard.innerHTML = `<h3>Sauvegarde manuelle</h3>
     <p class="desc">Utile si la sauvegarde automatique ne tient pas sur cet appareil : copie un code de ta progression avant de fermer, colle-le pour la restaurer.</p>`;
@@ -1364,6 +1372,7 @@ function endTutorial() {
   $("tutOverlay").classList.add("hidden");
   Game.state.tutorialSeen = true;
   saveState(Game.state);
+  AdService.requestTracking(); // iOS tracking prompt right after the tutorial, as the privacy policy states
 }
 
 // ---------------- Offline modal ----------------
